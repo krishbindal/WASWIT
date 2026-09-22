@@ -1,0 +1,8 @@
+# Ignore everything in these directories
+/raw/*
+/processed/*
+
+# Except for .gitkeep so the empty folders are committed
+!/raw/.gitkeep
+!/processed/.gitkeep
+!/configs/.gitkeep
