@@ -157,6 +157,14 @@ function validateBenchmarkStats(stats: BenchmarkStats, label: string): void {
   if (stats.min > stats.max) {
     throw new Error(`Invalid stats in ${label}: min (${stats.min}) cannot be greater than max (${stats.max})`);
   }
+  
+  if (stats.mean < stats.min || stats.mean > stats.max) {
+    throw new Error(`Invalid stats in ${label}: mean (${stats.mean}) must be between min (${stats.min}) and max (${stats.max})`);
+  }
+
+  if (stats.median < stats.min || stats.median > stats.max) {
+    throw new Error(`Invalid stats in ${label}: median (${stats.median}) must be between min (${stats.min}) and max (${stats.max})`);
+  }
 }
 
 /**

@@ -113,13 +113,51 @@ describe('Calibrator - Derivation', () => {
       record.results[0].jsStats!.min = -1;
       expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid min/);
     });
+
+    it('throws on median < min', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = 10;
+      record.results[0].jsStats!.max = 20;
+      record.results[0].jsStats!.median = 5;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/must be between min/);
+    });
+
+    it('throws on median > max', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = 10;
+      record.results[0].jsStats!.max = 20;
+      record.results[0].jsStats!.median = 25;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/must be between min/);
+    });
+
+    it('throws on mean < min', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = 10;
+      record.results[0].jsStats!.max = 20;
+      record.results[0].jsStats!.mean = 5;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/must be between min/);
+    });
+
+    it('throws on mean > max', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = 10;
+      record.results[0].jsStats!.max = 20;
+      record.results[0].jsStats!.mean = 25;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/must be between min/);
+    });
   });
 
   it('throws on contradictory preferredRuntime', () => {
     const record = makeRecord(['javascript']);
     // Fake the measurement to disagree with the stored preference
     record.results[0].wasmStats!.median = 10;
+    record.results[0].wasmStats!.min = 10;
+    record.results[0].wasmStats!.max = 10;
+    record.results[0].wasmStats!.mean = 10;
     record.results[0].jsStats!.median = 100;
+    record.results[0].jsStats!.min = 100;
+    record.results[0].jsStats!.max = 100;
+    record.results[0].jsStats!.mean = 100;
     expect(() => deriveWorkloadPolicy(record)).toThrow(/Contradictory preferredRuntime/);
   });
 
