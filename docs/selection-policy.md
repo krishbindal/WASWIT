@@ -9,17 +9,28 @@ The WASWIT dynamic selection engine isolates execution overhead measurement from
 ## Policy Structure
 A selection policy is defined as a versioned, immutable snapshot. 
 ```typescript
+interface CalibrationProvenance {
+  gridSizes: number[];
+  warmupIterations: number;
+  measurementIterations: number;
+  timestamp: string;
+}
+
 interface SelectionPolicy {
   version: string;
   derivationRule: string;
   workloads: Record<WorkloadId, WorkloadPolicy>;
 }
 ```
-Each `WorkloadPolicy` contains ordered rules mapping a `maxInputSize` to a preferred `RuntimeType`, along with a fallback `defaultRuntime`.
+Each `WorkloadPolicy` contains ordered rules mapping a `maxInputSize` to a preferred `RuntimeType`, a fallback `defaultRuntime`, and the `provenance` metadata.
+
+## Derivation Rule: median-crossover-consistent-v2
+A single noisy flip is insufficient to declare a state change. The active rule explicitly requires that runtime performance evidence must persist consecutively across at least two calibration points before a new transition boundary is declared. Empty calibration grids fail completely rather than establishing empirical fallbacks.
 
 ## Calibration Provenance
 Because WebAssembly instantiation overhead and boundary costs are browser-specific, policies must maintain clear provenance. 
 - Policies are explicitly generated offline during a **Calibration Phase**. 
+- They contain deep metadata tracking exact parameters (`gridSizes`, `warmupIterations`, `measurementIterations`) used. 
 - They contain metadata identifying the exact derivation rule (`derivationRule`) and the `version`.
 - Evaluation must never silently self-train or rewrite the policy. This guarantees a stable target for independent scientific evaluation.
 

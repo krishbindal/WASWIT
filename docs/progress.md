@@ -66,8 +66,8 @@
 - Deploy a deeply frozen, pure-function runtime selection engine.
 **Key Deliverables:**
 - Generic `analyzer` extracting deterministic Workload Characteristics without evaluation side effects.
-- Strict `SelectionPolicy` type enforcing versioning and rule ordering.
-- Offline `calibrator` sweeping parameter grids using the Benchmark Engine to derive policies based on median timing thresholds.
+- Strict `FrozenSelectionPolicy` type enforcing versioning, deep immutability, and full calibration provenance.
+- Offline `calibrator` sweeping parameter grids using the Benchmark Engine to derive policies based on the sustained `median-crossover-consistent-v2` rule.
 - Pure `selector` executing against deeply frozen rules, defaulting correctly for unseen bounds, independent of historical runtime observation.
 
 ## Phase 4: UI & Visualization (Pending)

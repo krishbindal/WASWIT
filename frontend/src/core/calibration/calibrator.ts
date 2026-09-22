@@ -5,6 +5,44 @@ import { runBenchmark } from '../benchmark/engine';
 
 export type BenchmarkRunner = (inputSize: number, runtime: RuntimeType) => Promise<unknown> | unknown;
 
+export const DERIVATION_RULE_VERSION = 'median-crossover-consistent-v2';
+
+/**
+ * Validates the calibration configuration constraints deterministically.
+ */
+export function validateCalibrationConfig(config: CalibrationConfig): void {
+  if (
+    typeof config.warmupIterations !== 'number' || 
+    !Number.isInteger(config.warmupIterations) || 
+    config.warmupIterations < 0
+  ) {
+    throw new Error('warmupIterations must be a non-negative integer');
+  }
+
+  if (
+    typeof config.measurementIterations !== 'number' ||
+    !Number.isInteger(config.measurementIterations) ||
+    config.measurementIterations <= 0
+  ) {
+    throw new Error('measurementIterations must be a positive integer');
+  }
+
+  if (!Array.isArray(config.gridSizes) || config.gridSizes.length === 0) {
+    throw new Error('gridSizes must be a non-empty array');
+  }
+
+  let lastSize = -1;
+  for (const size of config.gridSizes) {
+    if (typeof size !== 'number' || !Number.isInteger(size) || size < 0 || !Number.isFinite(size)) {
+      throw new Error(`Invalid grid size: ${size}. Must be a non-negative finite integer.`);
+    }
+    if (size <= lastSize) {
+      throw new Error(`gridSizes must be strictly ascending and unique. Found ${size} after ${lastSize}`);
+    }
+    lastSize = size;
+  }
+}
+
 /**
  * Performs a calibration sweep using provided runner functions over explicit grid sizes.
  * Does NOT modify the live policy. It produces a generic CalibrationRecord.
@@ -13,6 +51,8 @@ export async function runCalibrationSweep(
   config: CalibrationConfig,
   runner: BenchmarkRunner
 ): Promise<CalibrationRecord> {
+  validateCalibrationConfig(config);
+  
   const results: CalibrationResultPoint[] = [];
 
   for (const size of config.gridSizes) {
@@ -52,7 +92,6 @@ export async function runCalibrationSweep(
       wasmError = String(wasmRes.error);
     }
 
-    // Explicit conservative decision procedure based on median timings
     let preferred: 'javascript' | 'wasm' | 'tie' = 'tie';
     if (jsStats && wasmStats) {
       if (jsStats.median < wasmStats.median) {
@@ -85,50 +124,92 @@ export async function runCalibrationSweep(
 
 /**
  * Derives a deterministic WorkloadPolicy from a completed CalibrationRecord.
- * Unseen sizes default to the closest known boundary's state. 
- * Any size above the maximum transition size falls back to the final observed state.
+ * Uses the 'median-crossover-consistent-v2' rule, which requires evidence of a new runtime
+ * to be sustained across at least two consecutive points before creating a transition boundary.
+ * 
+ * Empty calibrations or calibrations failing to establish a base state explicitly throw errors.
  */
 export function deriveWorkloadPolicy(record: CalibrationRecord): WorkloadPolicy {
-  // Sort sizes ascending to ensure ordered boundaries
-  const sortedResults = [...record.results].sort((a, b) => a.inputSize - b.inputSize);
-  
-  if (sortedResults.length === 0) {
-    return {
-      workloadId: record.config.workloadId,
-      rules: [],
-      defaultRuntime: 'javascript'
-    };
+  if (record.results.length === 0) {
+    throw new Error('Cannot derive policy from empty calibration record.');
   }
 
-  const rules: SelectionRule[] = [];
-  let currentRuntime: RuntimeType | null = null;
-  let lastSize = -1;
-
-  for (let i = 0; i < sortedResults.length; i++) {
-    const pt = sortedResults[i];
-    
-    // Resolve ties deterministically (default to current state, or JS if initial)
-    const winner: RuntimeType = pt.preferredRuntime === 'tie' 
-      ? (currentRuntime || 'javascript') 
-      : pt.preferredRuntime;
-
-    if (currentRuntime === null) {
-      currentRuntime = winner;
-    } else if (winner !== currentRuntime) {
-      // Transition detected
-      rules.push({
-        maxInputSize: lastSize,
-        runtime: currentRuntime
-      });
-      currentRuntime = winner;
+  // Determine absolute preferences per point
+  const prefs = record.results.map(pt => {
+    if (!pt.jsStats || !pt.wasmStats) {
+      throw new Error(`Missing required JS or Wasm measurements for size ${pt.inputSize}`);
     }
-    lastSize = pt.inputSize;
+    return pt.preferredRuntime;
+  });
+
+  const firstPref = prefs[0];
+  let currentRuntime: RuntimeType = firstPref === 'tie' ? 'javascript' : (firstPref as RuntimeType);
+  const rules: SelectionRule[] = [];
+  
+  let candidateRuntime: RuntimeType | null = null;
+  let evidenceCount = 0;
+
+  for (let i = 0; i < record.results.length; i++) {
+    const rawPref = prefs[i];
+    // Treat ties as continuing the current established runtime
+    const pref: RuntimeType = rawPref === 'tie' ? currentRuntime : (rawPref as RuntimeType);
+
+    if (pref !== currentRuntime) {
+      // Disagreement with current state
+      if (candidateRuntime === pref) {
+        evidenceCount++;
+      } else {
+        candidateRuntime = pref;
+        evidenceCount = 1;
+      }
+
+      // If we have 2 consecutive wins for the new runtime, we transition
+      if (evidenceCount >= 2) {
+        // The boundary is set at the last size where the old currentRuntime was valid
+        // Since evidenceCount == 2, the candidate started at i-1.
+        // So the last confirmed point of currentRuntime was i-2.
+        // Wait, if i=1 is candidate and i=2 is candidate, i=0 was currentRuntime.
+        // The boundary maxInputSize should be the size at i-1? No, i-1 is the FIRST point of candidate.
+        // We want sizes <= the point before the evidence started to remain currentRuntime.
+        // So i-2 is the point. Wait, what if i=1 is the second evidence? (i.e. i=0 was candidate 1)
+        // If i=0 is candidate 1, that means the base state was never confirmed!
+        // But the base state was established at i=0. So i=0 cannot disagree with base state (unless prefs[0] was a tie, then base state is JS, and pref is JS, which agrees).
+        // Wait, prefs[0] === currentRuntime is always true for i=0!
+        // Proof: currentRuntime = prefs[0] === 'tie' ? 'js' : prefs[0].
+        // At i=0, pref = prefs[0] === 'tie' ? currentRuntime ('js') : prefs[0].
+        // So at i=0, pref === currentRuntime.
+        // Thus, disagreement can only start at i=1 or later!
+        // So if disagreement starts at i=1, the first evidence is i=1. The second is i=2.
+        // The last point confirming currentRuntime is i=0.
+        // Boundary maxInputSize = size at i-evidenceCount (i.e. i-2).
+        
+        const boundarySize = record.results[i - evidenceCount].inputSize;
+        
+        rules.push({
+          maxInputSize: boundarySize,
+          runtime: currentRuntime
+        });
+        
+        currentRuntime = candidateRuntime;
+        candidateRuntime = null;
+        evidenceCount = 0;
+      }
+    } else {
+      // Agrees with current state, reset candidate
+      candidateRuntime = null;
+      evidenceCount = 0;
+    }
   }
 
-  // The last observed runtime becomes the defaultRuntime (for everything beyond the last rule).
   return {
     workloadId: record.config.workloadId,
     rules,
-    defaultRuntime: currentRuntime || 'javascript'
+    defaultRuntime: currentRuntime,
+    provenance: {
+      gridSizes: record.config.gridSizes,
+      warmupIterations: record.config.warmupIterations,
+      measurementIterations: record.config.measurementIterations,
+      timestamp: record.timestamp
+    }
   };
 }

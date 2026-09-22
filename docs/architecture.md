@@ -36,7 +36,7 @@ Result Verification
    A lightweight pre-processing step that exclusively inspects incoming data configurations (e.g., array length, matrix dimensions) to produce deterministic workload characteristics. It does *not* make routing decisions and does *not* benchmark.
 
 5. **Selection Policy & Runtime Selector (Phase 3):** 
-   The core decision logic. Consumes characteristics from the Analyzer and a *frozen*, immutable policy to route the workload deterministically. It has no side effects, executes no benchmarks, and does not remember past behavior.
+   The core decision logic. Consumes characteristics from the Analyzer and a *frozen*, immutable `FrozenSelectionPolicy` to route the workload deterministically. It has no side effects, executes no benchmarks, and does not remember past behavior.
 
 6. **Calibration Engine (Phase 3):** 
    A dedicated runner used to perform input sweeps, discover crossovers, and establish thresholds (producing the Selection Policy). This is strictly executed offline and its logic is decoupled from live selection.

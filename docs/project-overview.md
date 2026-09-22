@@ -6,7 +6,7 @@
 ## Overview
 WebAssembly (Wasm) is often assumed to be universally faster than JavaScript for all computational tasks. However, its relative performance can vary significantly depending on the workload characteristics, input size, and the overhead associated with the JS-Wasm boundary (data serialization, memory transfer, and function invocation). 
 
-WASWIT is an experimental browser-based framework that aims to dynamically select the optimal execution environment—JavaScript or WebAssembly—based on workload characteristics at runtime.
+WASWIT is an experimental browser-based framework that aims to dynamically select the appropriate execution environment-JavaScript or WebAssembly-based on workload characteristics at runtime.
 
 ## Objectives
 1. Build a controlled environment to benchmark equivalent algorithms in both JavaScript and WebAssembly.

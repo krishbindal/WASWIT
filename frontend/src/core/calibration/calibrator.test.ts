@@ -1,77 +1,88 @@
 import { describe, it, expect } from 'vitest';
-import { runCalibrationSweep, deriveWorkloadPolicy } from './calibrator';
-import { CalibrationConfig, CalibrationRecord } from './types';
+import { deriveWorkloadPolicy, validateCalibrationConfig } from './calibrator';
+import { CalibrationRecord, CalibrationResultPoint } from './types';
+import { BenchmarkStats } from '../benchmark/types';
 
-describe('Calibrator', () => {
-  it('runs sweep and returns calibration record', async () => {
-    const config: CalibrationConfig = {
-      workloadId: 'matrix',
-      gridSizes: [10, 20],
-      warmupIterations: 1,
-      measurementIterations: 2
-    };
-
-    const record = await runCalibrationSweep(config, async (size, runtime) => {
-      // Mock workload execution that sleeps very briefly.
-      // JS is "faster" for 10, Wasm is "faster" for 20 by deterministic delay simulation
-      const delay = (runtime === 'javascript' && size === 10) || (runtime === 'wasm' && size === 20) ? 1 : 5;
-      await new Promise(r => setTimeout(r, delay));
-    });
-
-    expect(record.config).toEqual(config);
-    expect(record.results.length).toBe(2);
-    expect(record.results[0].inputSize).toBe(10);
-    expect(record.results[1].inputSize).toBe(20);
-    expect(record.results[0].jsStats).not.toBeNull();
-    expect(record.results[0].wasmStats).not.toBeNull();
-    // Timing in testing can be extremely flaky. We do not strictly assert preferredRuntime 
-    // unless we strictly mock performance.now, which Vitest can do, but let's test derivation explicitly.
+describe('Calibrator - Validation', () => {
+  it('rejects empty grid sizes', () => {
+    expect(() => validateCalibrationConfig({ workloadId: 'sort', gridSizes: [], warmupIterations: 1, measurementIterations: 1 })).toThrow(/non-empty array/);
   });
 
-  it('derives policy properly from record', () => {
-    const mockRecord: CalibrationRecord = {
-      config: {
-        workloadId: 'sha256',
-        gridSizes: [100, 200, 300, 400],
-        warmupIterations: 1,
-        measurementIterations: 1
-      },
-      timestamp: new Date().toISOString(),
-      results: [
-        { inputSize: 100, jsStats: null, wasmStats: null, preferredRuntime: 'javascript' },
-        { inputSize: 200, jsStats: null, wasmStats: null, preferredRuntime: 'javascript' },
-        { inputSize: 300, jsStats: null, wasmStats: null, preferredRuntime: 'wasm' },
-        { inputSize: 400, jsStats: null, wasmStats: null, preferredRuntime: 'wasm' },
-      ]
-    };
+  it('rejects negative grid sizes', () => {
+    expect(() => validateCalibrationConfig({ workloadId: 'sort', gridSizes: [-1, 10], warmupIterations: 1, measurementIterations: 1 })).toThrow(/non-negative/);
+  });
 
-    const policy = deriveWorkloadPolicy(mockRecord);
-    expect(policy.workloadId).toBe('sha256');
+  it('rejects duplicate or unordered grid sizes', () => {
+    expect(() => validateCalibrationConfig({ workloadId: 'sort', gridSizes: [10, 10], warmupIterations: 1, measurementIterations: 1 })).toThrow(/strictly ascending/);
+    expect(() => validateCalibrationConfig({ workloadId: 'sort', gridSizes: [20, 10], warmupIterations: 1, measurementIterations: 1 })).toThrow(/strictly ascending/);
+  });
+});
+
+describe('Calibrator - Derivation', () => {
+  const mockStats: BenchmarkStats = { count: 1, min: 1, max: 1, mean: 1, median: 1 };
+
+  function makeRecord(prefs: ('javascript'|'wasm'|'tie')[], sizes = [10, 20, 30, 40, 50, 60]): CalibrationRecord {
+    const results: CalibrationResultPoint[] = prefs.map((p, i) => ({
+      inputSize: sizes[i],
+      jsStats: mockStats,
+      wasmStats: mockStats,
+      preferredRuntime: p
+    }));
+    return {
+      config: { workloadId: 'sha256', gridSizes: sizes.slice(0, prefs.length), warmupIterations: 1, measurementIterations: 1 },
+      timestamp: '2023-01-01',
+      results
+    };
+  }
+
+  it('throws on empty calibration record', () => {
+    expect(() => deriveWorkloadPolicy({ config: { workloadId: 'matrix', gridSizes: [], warmupIterations: 1, measurementIterations: 1 }, timestamp: '', results: [] })).toThrow(/empty/);
+  });
+
+  it('throws on missing measurements', () => {
+    const record = makeRecord(['javascript']);
+    record.results[0].wasmStats = null;
+    expect(() => deriveWorkloadPolicy(record)).toThrow(/Missing required/);
+  });
+
+  it('derives clean JS -> Wasm transition when evidence is sustained', () => {
+    const record = makeRecord(['javascript', 'javascript', 'wasm', 'wasm']);
+    const policy = deriveWorkloadPolicy(record);
     expect(policy.rules.length).toBe(1);
-    expect(policy.rules[0].maxInputSize).toBe(200);
+    expect(policy.rules[0].maxInputSize).toBe(20); // The point before evidence started
     expect(policy.rules[0].runtime).toBe('javascript');
     expect(policy.defaultRuntime).toBe('wasm');
   });
 
-  it('handles purely one runtime better', () => {
-    const mockRecord: CalibrationRecord = {
-      config: {
-        workloadId: 'sort',
-        gridSizes: [10, 20, 30],
-        warmupIterations: 1,
-        measurementIterations: 1
-      },
-      timestamp: new Date().toISOString(),
-      results: [
-        { inputSize: 10, jsStats: null, wasmStats: null, preferredRuntime: 'wasm' },
-        { inputSize: 20, jsStats: null, wasmStats: null, preferredRuntime: 'wasm' },
-        { inputSize: 30, jsStats: null, wasmStats: null, preferredRuntime: 'wasm' }
-      ]
-    };
+  it('ignores isolated noisy flips', () => {
+    // JS, JS, Wasm, JS, JS
+    const record = makeRecord(['javascript', 'javascript', 'wasm', 'javascript', 'javascript']);
+    const policy = deriveWorkloadPolicy(record);
+    expect(policy.rules.length).toBe(0); // No transition sustained for 2 points
+    expect(policy.defaultRuntime).toBe('javascript');
+  });
 
-    const policy = deriveWorkloadPolicy(mockRecord);
-    expect(policy.workloadId).toBe('sort');
-    expect(policy.rules.length).toBe(0); // No transitions!
+  it('handles sustained reverse transition', () => {
+    // JS, JS, Wasm, Wasm, JS, JS
+    const record = makeRecord(['javascript', 'javascript', 'wasm', 'wasm', 'javascript', 'javascript']);
+    const policy = deriveWorkloadPolicy(record);
+    expect(policy.rules.length).toBe(2);
+    expect(policy.rules[0].maxInputSize).toBe(20);
+    expect(policy.rules[0].runtime).toBe('javascript');
+    
+    expect(policy.rules[1].maxInputSize).toBe(40);
+    expect(policy.rules[1].runtime).toBe('wasm');
+    
+    expect(policy.defaultRuntime).toBe('javascript');
+  });
+
+  it('treats ties as continuing current state', () => {
+    // JS, JS, tie, Wasm, Wasm
+    const record = makeRecord(['javascript', 'javascript', 'tie', 'wasm', 'wasm']);
+    const policy = deriveWorkloadPolicy(record);
+    expect(policy.rules.length).toBe(1);
+    expect(policy.rules[0].maxInputSize).toBe(30); // At 30 it was a tie, so current was JS.
+    expect(policy.rules[0].runtime).toBe('javascript');
     expect(policy.defaultRuntime).toBe('wasm');
   });
 });

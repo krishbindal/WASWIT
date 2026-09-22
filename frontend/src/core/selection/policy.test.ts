@@ -3,33 +3,39 @@ import { validatePolicy, freezePolicy } from './policy';
 import { SelectionPolicy } from './types';
 
 describe('Policy Validation', () => {
-  it('validates a well-formed policy', () => {
-    const policy: SelectionPolicy = {
-      version: '1.0',
-      derivationRule: 'median-crossover',
-      workloads: {
-        matrix: {
-          workloadId: 'matrix',
-          rules: [
-            { maxInputSize: 10, runtime: 'javascript' },
-            { maxInputSize: 100, runtime: 'wasm' }
-          ],
-          defaultRuntime: 'wasm'
-        }
+  const validPolicy: SelectionPolicy = {
+    version: '1.0',
+    derivationRule: 'median-crossover-consistent-v2',
+    workloads: {
+      matrix: {
+        workloadId: 'matrix',
+        rules: [
+          { maxInputSize: 10, runtime: 'javascript' },
+          { maxInputSize: 100, runtime: 'wasm' }
+        ],
+        defaultRuntime: 'wasm',
+        provenance: { gridSizes: [10, 100], warmupIterations: 1, measurementIterations: 1, timestamp: '' }
       }
-    };
-    expect(() => validatePolicy(policy)).not.toThrow();
+    }
+  };
+
+  it('validates a well-formed policy', () => {
+    expect(() => validatePolicy(validPolicy)).not.toThrow();
   });
 
   it('rejects missing version', () => {
-    const policy = { derivationRule: 'test', workloads: {} } as unknown as SelectionPolicy;
+    const policy = { ...validPolicy, version: '' } as unknown as SelectionPolicy;
     expect(() => validatePolicy(policy)).toThrow(/version/);
+  });
+  
+  it('rejects missing provenance', () => {
+    const policy = { ...validPolicy, workloads: { matrix: { ...validPolicy.workloads.matrix, provenance: undefined } } } as unknown as SelectionPolicy;
+    expect(() => validatePolicy(policy)).toThrow(/Missing calibration provenance/);
   });
 
   it('rejects out of order maxInputSize', () => {
     const policy: SelectionPolicy = {
-      version: '1.0',
-      derivationRule: 'test',
+      ...validPolicy,
       workloads: {
         sort: {
           workloadId: 'sort',
@@ -37,7 +43,8 @@ describe('Policy Validation', () => {
             { maxInputSize: 100, runtime: 'javascript' },
             { maxInputSize: 10, runtime: 'wasm' }
           ],
-          defaultRuntime: 'wasm'
+          defaultRuntime: 'wasm',
+          provenance: { gridSizes: [], warmupIterations: 1, measurementIterations: 1, timestamp: '' }
         }
       }
     };
@@ -45,22 +52,20 @@ describe('Policy Validation', () => {
   });
 
   it('freezes the policy deeply', () => {
-    const policy: SelectionPolicy = {
-      version: '1.0',
-      derivationRule: 'test',
-      workloads: {
-        sha256: {
-          workloadId: 'sha256',
-          rules: [
-            { maxInputSize: 50, runtime: 'javascript' }
-          ],
-          defaultRuntime: 'wasm'
-        }
-      }
-    };
-    const frozen = freezePolicy(policy);
+    const frozen = freezePolicy(validPolicy);
     expect(Object.isFrozen(frozen)).toBe(true);
-    expect(Object.isFrozen(frozen.workloads.sha256)).toBe(true);
-    expect(Object.isFrozen(frozen.workloads.sha256?.rules)).toBe(true);
+    expect(Object.isFrozen(frozen.workloads.matrix)).toBe(true);
+    expect(Object.isFrozen(frozen.workloads.matrix?.rules)).toBe(true);
+    expect(Object.isFrozen(frozen.workloads.matrix?.provenance)).toBe(true);
+    
+    // Demonstrate mutation attempt throws in strict mode
+    expect(() => {
+      // @ts-expect-error - explicitly violating types for test
+      frozen.version = '1.1';
+    }).toThrow();
+    
+    expect(() => {
+      (frozen.workloads.matrix as unknown as Record<string, string>).defaultRuntime = 'javascript';
+    }).toThrow();
   });
 });

@@ -1,4 +1,4 @@
-import { WorkloadCharacteristics, SelectionPolicy } from './types';
+import { WorkloadCharacteristics, FrozenSelectionPolicy } from './types';
 import { RuntimeType } from '../types';
 
 /**
@@ -6,7 +6,7 @@ import { RuntimeType } from '../types';
  * Selects between javascript and wasm strictly based on pre-calibrated frozen policies.
  * Contains NO side effects, makes NO network requests, and does NOT execute benchmarks.
  */
-export function selectRuntime(characteristics: WorkloadCharacteristics, policy: SelectionPolicy): RuntimeType {
+export function selectRuntime(characteristics: WorkloadCharacteristics, policy: FrozenSelectionPolicy): RuntimeType {
   const workloadPolicy = policy.workloads[characteristics.workloadId];
   
   if (!workloadPolicy) {
