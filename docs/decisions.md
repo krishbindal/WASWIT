@@ -18,6 +18,10 @@ This document serves as an architectural decision record (ADR) for the WASWIT pr
 **Decision:** Commit `wasm/Cargo.lock` to source control.
 **Rationale:** Although `wasm-pack` creates a package that is later integrated into the frontend workspace, committing `Cargo.lock` ensures that anyone building the Wasm module locally (using `wasm-pack build`) receives identical dependency versions, providing reproducible benchmark environments.
 
+## 5. WebAssembly Frontend Integration
+**Decision:** Package `waswit-wasm` via `npm pack` and install from tarball rather than symlinking.
+**Rationale:** Next.js 15+ (with Turbopack) strictly validates `node_modules` file resolutions. Using a standard `file:../wasm/pkg` causes Turbopack to fail when resolving WebAssembly modules due to symlink boundaries. Packing the Wasm output into a `.tgz` tarball and installing that directly cleanly sidesteps these strict bundler constraints while preserving local dependency management.
+
 ## Unresolved Decisions
 - **Web Workers:** Should benchmarks run on the main thread (risking UI freezes) or in a Web Worker (introducing messaging overhead)? This will be evaluated via pilot experiments during implementation.
 - **Shared Memory (SharedArrayBuffer):** Should we use shared memory to minimize JS↔Wasm copying overhead? This requires specific HTTP headers (Cross-Origin Isolation), which may complicate the static web deployment. Pending pilot evaluation.

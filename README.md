@@ -4,10 +4,11 @@
 WASWIT is a final-year B.Tech project that proposes a browser-based framework intended to select between JavaScript and WebAssembly for executing computational workloads. The primary goal is to investigate whether workload-aware runtime selection can improve the overall efficiency of browser-based computational tasks compared to statically picking one runtime.
 
 ## Current Development Status
-**Phase 1A: Environment Setup & Project Scaffold** (Completed)
+**Phase 1B: First Computational Workload & JS/Wasm Parity** (Completed)
 - Next.js and Rust environments scaffolded.
 - E2E and Unit testing frameworks configured and passing.
-- Development toolchains installed and verified locally.
+- Deterministic Matrix Multiplication workload successfully implemented in JavaScript and WebAssembly.
+- Strict algorithmic parity verified.
 - No benchmarking or routing logic has been implemented yet.
 
 ## Research Direction

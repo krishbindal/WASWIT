@@ -11,7 +11,8 @@
   "dependencies": {
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "waswit-wasm": "file:../wasm/pkg/waswit-wasm-0.1.0.tgz"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
