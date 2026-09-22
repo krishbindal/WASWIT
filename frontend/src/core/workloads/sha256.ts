@@ -1,14 +1,8 @@
-/**
- * Deterministically generates a Uint8Array of a given byte size.
- * Uses a simple linear congruential formula to ensure identical arrays
- * across JS and WebAssembly without relying on Math.random().
- */
 export function generateSha256Input(size: number): Uint8Array {
   const arr = new Uint8Array(size);
-  let seed = 54321;
   for (let i = 0; i < size; i++) {
-    seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF;
-    arr[i] = seed % 256;
+    // Simple exact 8-bit deterministic index-based formula
+    arr[i] = (i * 13 + 7) & 0xff;
   }
   return arr;
 }

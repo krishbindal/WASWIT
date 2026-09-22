@@ -23,4 +23,24 @@ test('WASWIT application computes Workload Parity correctly for all workloads', 
   expect(jsText).toBeTruthy();
   expect(jsText).not.toBe('JS: Computing...');
   expect(jsText?.replace('JS: ', '')).toEqual(wasmText?.replace('Wasm: ', ''));
+
+  // Ensure JS and Wasm results exist and are identical for Sort
+  const sortJsResult = page.locator('.sort-js-result');
+  const sortWasmResult = page.locator('.sort-wasm-result');
+  const sortJsText = await sortJsResult.textContent();
+  const sortWasmText = await sortWasmResult.textContent();
+  
+  expect(sortJsText).toBeTruthy();
+  expect(sortJsText).not.toBe('JS: Computing...');
+  expect(sortJsText?.replace('JS: ', '')).toEqual(sortWasmText?.replace('Wasm: ', ''));
+
+  // Ensure JS and Wasm results exist and are identical for SHA256
+  const sha256JsResult = page.locator('.sha256-js-result');
+  const sha256WasmResult = page.locator('.sha256-wasm-result');
+  const sha256JsText = await sha256JsResult.textContent();
+  const sha256WasmText = await sha256WasmResult.textContent();
+
+  expect(sha256JsText).toBeTruthy();
+  expect(sha256JsText).not.toBe('JS: Computing...');
+  expect(sha256JsText?.replace('JS: ', '')).toEqual(sha256WasmText?.replace('Wasm: ', ''));
 });

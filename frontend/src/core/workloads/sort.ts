@@ -7,10 +7,9 @@ export function generateSortInput(size: number): Int32Array {
   const arr = new Int32Array(size);
   let seed = 12345;
   for (let i = 0; i < size; i++) {
-    // Basic LCG: seed = (seed * 1103515245 + 12345) % 2^31
-    seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF;
-    // We want some negative numbers, some duplicates, and unsorted behavior.
-    // Map to a range like -10000 to 10000
+    // Exact 32-bit integer LCG semantics
+    seed = (Math.imul(seed, 1103515245) + 12345) | 0;
+    // Map to a range like -10000 to 10000 to include negatives and duplicates
     arr[i] = (seed % 20000) - 10000;
   }
   return arr;

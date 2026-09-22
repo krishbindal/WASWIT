@@ -23,8 +23,11 @@ To effectively test the WASWIT selection engine, algorithms must be implemented 
 ## 3. Cryptographic Hashing — SHA-256 (Implemented - Phase 2)
 - **Nature:** Extensive bitwise operations, 32-bit integer arithmetic.
 - **Variable:** Input length in bytes (`N`).
-- **Justification:** SHA-256 requires precise 32-bit arithmetic, a known historical weak point of JavaScript compared to compiled languages like Rust. This workload provides a distinct, heavy bitwise computational profile.
+- **Justification:** SHA-256 provides a computational profile dominated by 32-bit bitwise and integer operations, distinct from matrix arithmetic and sorting.
 - **Data Representation:** Input `Uint8Array`, output `Uint8Array(32)`.
 - **JS/Wasm Boundary:** Copies byte chunks to WebAssembly and returns a fixed 32-byte digest array.
 - **Implementation Strategy:** Pure implementations in both JS and Rust. Does not use native browser APIs (like `crypto.subtle`) or external Rust crates.
-- **Input Strategy:** Deterministically generated `Uint8Array` bytes derived from index-based formulas to ensure strict reproducible equality across JS and Rust tests.
+- **Input Strategy:** Deterministically generated `Uint8Array` bytes derived from exact fixed-width index formulas to ensure strict reproducible equality across JS and Rust tests.
+
+**Important Note regarding Phase 2:**
+Phase 2 establishes strict algorithmic correctness and parity across workloads. Phase 2 does NOT determine which runtime is faster.

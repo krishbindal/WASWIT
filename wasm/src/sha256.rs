@@ -132,4 +132,34 @@ mod tests {
         let digest = sha256_wasm(input);
         assert_eq!(to_hex(&digest), "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1");
     }
+
+    fn generate_deterministic_input(size: usize) -> Vec<u8> {
+        let mut arr = vec![0u8; size];
+        for i in 0..size {
+            arr[i] = ((i * 13 + 7) & 0xff) as u8;
+        }
+        arr
+    }
+
+    #[test]
+    fn test_padding_boundaries() {
+        let expected_hashes = [
+            (55, "166cb1ce48dba01b7d55341ae1d847d73f24f538ecf4911f657fba255b83d2aa"),
+            (56, "1bfb069cb406b899a507a8a00c5d721c207463d63e313b6dd994ce67cb46cc13"),
+            (57, "81c44c9ad65412972b63fcab88e0b3b3ba8dadc4fc533525f6698f458a8ad6c3"),
+            (63, "f7191804fb70f054952e831548291633b7a1f300f0f4d877f38d995ed4ce274b"),
+            (64, "2d91cac9246ea9f11939b47308360f0c8e8be87db686dc3c1d1dcbf91eb054cf"),
+            (65, "d0c7d32839006da594139cfa302b1e478c238355573c80079aa4be0a94621c56"),
+            (127, "f6a779f356943adb60fffef004625272ae8e1421cce45d5a02d142a8f6229031"),
+            (128, "477f9dbe9ced58a04330559b8e5a755753f3d72680062f2d72fe57e4b9370df1"),
+            (129, "07780ed5a9c7be22ecc1ce1ba1e5432a7b8bfd61a2f43d67cd06622d96e0e90e"),
+        ];
+
+        for &(len, expected) in &expected_hashes {
+            let input = generate_deterministic_input(len);
+            let digest = sha256_wasm(&input);
+            assert_eq!(digest.len(), 32);
+            assert_eq!(to_hex(&digest), expected);
+        }
+    }
 }

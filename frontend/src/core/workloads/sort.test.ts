@@ -65,4 +65,23 @@ describe('mergeSortJS', () => {
     expect(isSorted).toBe(true);
     expect(sorted.length).toBe(100);
   });
+
+  it('generates deterministic exact 32-bit values with negatives and duplicates', () => {
+    const input1 = generateSortInput(5);
+    const input2 = generateSortInput(5);
+    expect(input1).toEqual(input2);
+
+    // Assert exact values to verify fixed-width integer logic
+    // Using formula: seed = (Math.imul(seed, 1103515245) + 12345) | 0
+    // arr[i] = (seed % 20000) - 10000
+    // seed starts at 12345
+    expect(input1[0]).toBe(-21042);
+    expect(input1[1]).toBe(-29873);
+    expect(input1[2]).toBe(-26724);
+    expect(input1[3]).toBe(-6427);
+    expect(input1[4]).toBe(-18470);
+
+    // Verify it contains negatives
+    expect(Array.from(input1).some(v => v < 0)).toBe(true);
+  });
 });
