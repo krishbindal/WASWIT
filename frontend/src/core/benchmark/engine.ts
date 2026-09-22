@@ -42,20 +42,28 @@ export async function runBenchmark<TInput, TResult>(
   input: TInput,
   config: BenchmarkConfig
 ): Promise<BenchmarkRunResult> {
+  const samples: BenchmarkSample[] = [];
+
   try {
     validateConfig(config);
 
     // Warmup phase (executions are discarded)
     for (let i = 0; i < config.warmupIterations; i++) {
-      await executor(input);
+      try {
+        await executor(input);
+      } catch (error) {
+        throw new Error(`Warmup iteration ${i} failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
-
-    const samples: BenchmarkSample[] = [];
 
     // Measurement phase
     for (let i = 0; i < config.measurementIterations; i++) {
       const start = performance.now();
-      await executor(input);
+      try {
+        await executor(input);
+      } catch (error) {
+        throw new Error(`Measurement iteration ${i} failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
       const end = performance.now();
 
       const elapsedMs = end - start;
@@ -83,7 +91,9 @@ export async function runBenchmark<TInput, TResult>(
     return {
       success: false,
       error: error instanceof Error ? error : String(error),
+      samples,
       config
     };
   }
 }
+

@@ -3,7 +3,7 @@ import { runBenchmark } from './engine';
 import { BenchmarkConfig } from './types';
 
 describe('runBenchmark engine', () => {
-  let perfNowSpy: any;
+  let perfNowSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     // Mock performance.now to increment predictably
@@ -79,11 +79,15 @@ describe('runBenchmark engine', () => {
     ]);
   });
 
-  it('returns a failed result if the executor throws', async () => {
+  it('returns a failed result if the executor throws and preserves previous samples', async () => {
+    let calls = 0;
     const executor = vi.fn(() => {
-      throw new Error('Executor failure');
+      if (calls === 2) {
+        throw new Error('Executor failure');
+      }
+      calls++;
     });
-    const config: BenchmarkConfig = { warmupIterations: 0, measurementIterations: 1 };
+    const config: BenchmarkConfig = { warmupIterations: 0, measurementIterations: 3 };
 
     const result = await runBenchmark(executor, null, config);
 
@@ -91,7 +95,33 @@ describe('runBenchmark engine', () => {
     if (result.success) return; // for type guarding
 
     expect(result.error).toBeInstanceOf(Error);
-    expect((result.error as Error).message).toBe('Executor failure');
+    expect((result.error as Error).message).toMatch(/Measurement iteration 2 failed: Executor failure/);
+    
+    // Partial samples should be preserved
+    expect(result.samples).toHaveLength(2);
+    expect(result.samples[0].iteration).toBe(0);
+    expect(result.samples[1].iteration).toBe(1);
+  });
+
+  it('fails during warmup without inventing measured samples', async () => {
+    let calls = 0;
+    const executor = vi.fn(() => {
+      if (calls === 1) {
+        throw new Error('Warmup failure');
+      }
+      calls++;
+    });
+    const config: BenchmarkConfig = { warmupIterations: 3, measurementIterations: 5 };
+
+    const result = await runBenchmark(executor, null, config);
+
+    expect(result.success).toBe(false);
+    if (result.success) return;
+
+    expect((result.error as Error).message).toMatch(/Warmup iteration 1 failed: Warmup failure/);
+    
+    // Samples should be completely empty
+    expect(result.samples).toHaveLength(0);
   });
 
   it('fails clearly on invalid configuration values (negative warmup)', async () => {

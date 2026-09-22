@@ -1,6 +1,6 @@
 # WASWIT Benchmarking Engine
 
-The Benchmarking Engine (`frontend/src/core/benchmark/`) provides a highly controlled, statistically valid measurement harness for executing and timing computational workloads.
+The Benchmarking Engine (`frontend/src/core/benchmark/`) provides a highly controlled benchmarking and measurement harness for executing and timing computational workloads.
 
 ## Core Responsibilities
 
@@ -31,7 +31,7 @@ The engine abstracts whether the workload is running JavaScript or Rust/WebAssem
 
 ### Warmup
 
-To avoid artifacts caused by JIT compilation (JavaScript engine warming) or WebAssembly instantiation caches, the engine runs a configurable number of **warmup iterations**.
+Warmup iterations are used to reduce the influence of startup, JIT compilation, and initialization effects before measured execution.
 
 Warmup execution outputs and timings are immediately discarded and do not pollute the raw sample array.
 

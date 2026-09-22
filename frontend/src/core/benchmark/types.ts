@@ -31,4 +31,5 @@ export interface BenchmarkStats {
 
 export type BenchmarkRunResult = 
   | { success: true; stats: BenchmarkStats; samples: BenchmarkSample[]; config: BenchmarkConfig }
-  | { success: false; error: Error | string; config: BenchmarkConfig };
+  | { success: false; error: Error | string; samples: BenchmarkSample[]; config: BenchmarkConfig };
+
