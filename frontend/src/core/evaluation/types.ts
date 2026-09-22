@@ -20,12 +20,12 @@ export interface EvaluationTrial {
   /** True if this trial was executed during the warmup phase (should typically be excluded from summaries) */
   isWarmup: boolean;
   executionMode: ExecutionMode;
-  /** The actual runtime executed. For Mode A/B it is fixed; for Mode C it is chosen by the selector. */
-  selectedRuntime: RuntimeType;
+  /** The actual runtime executed. For Mode A/B it is fixed; for Mode C it is chosen by the selector. Undefined if selector failed. */
+  selectedRuntime?: RuntimeType;
   /** The overhead of running the analyzer and selector (only present in adaptive mode) */
   selectionOverheadMs?: number;
-  /** The execution time in milliseconds. Preserved exactly. */
-  elapsedMs: number;
+  /** The execution time in milliseconds. Preserved explicitly only on successful execution. */
+  elapsedMs?: number;
   error?: string;
   timestamp: string;
 }

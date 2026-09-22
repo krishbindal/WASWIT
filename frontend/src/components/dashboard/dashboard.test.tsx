@@ -79,8 +79,8 @@ describe('Dashboard Components', () => {
     const mockMeta: ExperimentMetadata = {
       browser: 'Chrome 120',
       os: 'Windows 11',
-      cpu: 'Core i9',
-      ram: '32GB',
+      cpuModel: 'Unavailable', logicalProcessorCount: 16,
+      approximateDeviceMemoryGB: 32,
       timestamp: '2026-09-23',
       warmupIterations: 5,
       measurementIterations: 10,
@@ -96,7 +96,7 @@ describe('Dashboard Components', () => {
       render(<ExperimentalMetadata metadata={mockMeta} />);
       expect(screen.getByText('Chrome 120')).toBeDefined();
       expect(screen.getByText('Windows 11')).toBeDefined();
-      expect(screen.getByText('Core i9')).toBeDefined();
+      expect(screen.getByText('16 cores (Unavailable)')).toBeDefined();
     });
   });
 
@@ -138,7 +138,7 @@ describe('Dashboard Components', () => {
 
   describe('DashboardShell', () => {
     it('renders without crashing with empty runs', () => {
-      render(<DashboardShell runs={{}} />);
+      render(<DashboardShell runs={{}} frozenPolicy={null} />);
       expect(screen.getByText('Research Dashboard')).toBeDefined();
       expect(screen.getByText('No Policy')).toBeDefined();
     });

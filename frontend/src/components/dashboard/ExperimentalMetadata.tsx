@@ -14,8 +14,8 @@ export function ExperimentalMetadata({ metadata }: { metadata: ExperimentMetadat
         <tbody>
           <tr className="border-b"><th className="p-2 w-1/3 bg-gray-50 font-medium">Browser</th><td className="p-2">{metadata.browser}</td></tr>
           <tr className="border-b"><th className="p-2 bg-gray-50 font-medium">OS</th><td className="p-2">{metadata.os}</td></tr>
-          <tr className="border-b"><th className="p-2 bg-gray-50 font-medium">CPU</th><td className="p-2">{metadata.cpu}</td></tr>
-          <tr className="border-b"><th className="p-2 bg-gray-50 font-medium">RAM</th><td className="p-2">{metadata.ram}</td></tr>
+          <tr className="border-b"><th className="p-2 bg-gray-50 font-medium">CPU</th><td className="p-2">{metadata.logicalProcessorCount} cores ({metadata.cpuModel})</td></tr>
+          <tr className="border-b"><th className="p-2 bg-gray-50 font-medium">RAM</th><td className="p-2">{metadata.approximateDeviceMemoryGB} GB</td></tr>
           <tr><th className="p-2 bg-gray-50 font-medium">Timestamp</th><td className="p-2 font-mono">{metadata.timestamp}</td></tr>
         </tbody>
       </table>

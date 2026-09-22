@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { DashboardShell } from '@/components/dashboard/DashboardShell';
+import { mockPolicyFixture } from '@/core/fixtures/policy';
 import { generateDeterministicMatrix, multiplyMatricesJS } from '@/core/workloads/matrix';
 import { generateSortInput, mergeSortJS } from '@/core/workloads/sort';
 import { generateSha256Input, sha256JS } from '@/core/workloads/sha256';
 import { initWasm, multiplyMatricesWasm, mergeSortWasm, sha256Wasm } from '@/core/workloads/wasm';
-import { DashboardShell } from '@/components/dashboard/DashboardShell';
 
 function toHex(buffer: Uint8Array): string {
   return Array.from(buffer)
@@ -134,7 +135,7 @@ export default function Home() {
       </header>
 
       <div className="w-full max-w-6xl space-y-12">
-        <DashboardShell runs={{}} />
+        <DashboardShell runs={{}} frozenPolicy={mockPolicyFixture} />
 
         <section className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white">
           <h2 className="text-2xl font-semibold mb-4">Workload Parity Tests</h2>

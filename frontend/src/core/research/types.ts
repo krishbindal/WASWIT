@@ -5,8 +5,9 @@ import { WorkloadPolicy } from '@/core/selection/types';
 export interface ExperimentMetadata {
   browser: string;
   os: string;
-  cpu: string;
-  ram: string;
+  cpuModel: string;
+  logicalProcessorCount: string | number;
+  approximateDeviceMemoryGB: string | number;
   timestamp: string;
   warmupIterations: number;
   measurementIterations: number;

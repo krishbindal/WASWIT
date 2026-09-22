@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { WorkloadId } from '@/core/types';
 import { EvaluationConfig, EvaluationRun } from '@/core/evaluation/types';
 import { runEvaluation } from '@/core/evaluation/engine';
-import { WorkloadPolicy, SelectionPolicy } from '@/core/selection/types';
+import { FrozenSelectionPolicy } from '@/core/selection/types';
 
 interface EvaluationControlProps {
   workloadId: WorkloadId;
-  policy: WorkloadPolicy | null;
+  policy: FrozenSelectionPolicy | null;
   onEvaluationComplete: (run: EvaluationRun) => void;
 }
 
@@ -38,17 +38,9 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
       generationOffset: 42 
     };
 
-    const fullPolicy: SelectionPolicy = {
-      version: 'eval',
-      derivationRule: 'eval',
-      workloads: {
-        [workloadId]: policy
-      }
-    };
-
     try {
       let finalRun: EvaluationRun | null = null;
-      for await (const runUpdate of runEvaluation(config, fullPolicy, `eval-${Date.now()}`)) {
+      for await (const runUpdate of runEvaluation(config, policy, `eval-${Date.now()}`)) {
         setStatus(runUpdate.status);
         finalRun = runUpdate;
       }

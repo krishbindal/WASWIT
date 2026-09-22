@@ -13,12 +13,14 @@ import { VisualizationDataTable } from './VisualizationDataTable';
 import { EvaluationControl } from './EvaluationControl';
 import { ResearchRun, VisualizationPoint } from '@/core/research/types';
 import { EvaluationRun } from '@/core/evaluation/types';
+import { FrozenSelectionPolicy } from '@/core/selection/types';
 
 interface DashboardShellProps {
   runs: Partial<Record<WorkloadId, ResearchRun>>;
+  frozenPolicy: FrozenSelectionPolicy | null;
 }
 
-export function DashboardShell({ runs }: DashboardShellProps) {
+export function DashboardShell({ runs, frozenPolicy }: DashboardShellProps) {
   const [activeWorkload, setActiveWorkload] = useState<WorkloadId>('matrix');
   const [evalRuns, setEvalRuns] = useState<Partial<Record<WorkloadId, EvaluationRun>>>({});
   
@@ -57,18 +59,18 @@ export function DashboardShell({ runs }: DashboardShellProps) {
       
       <EvaluationControl 
         workloadId={activeWorkload} 
-        policy={activeRun?.policy || null} 
+        policy={frozenPolicy} 
         onEvaluationComplete={(run) => setEvalRuns(prev => ({ ...prev, [run.config.workloadId]: run }))}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <PolicySummary 
-            policy={activeRun?.policy || null} 
-            version={activeRun?.policyVersion || null}
-            derivationRule={activeRun?.policyDerivationRule || null}
+            policy={frozenPolicy?.workloads[activeWorkload] || null} 
+            version={frozenPolicy?.version || null}
+            derivationRule={frozenPolicy?.derivationRule || null}
           />
-          <PolicyThresholdTable policy={activeRun?.policy || null} />
+          <PolicyThresholdTable policy={frozenPolicy?.workloads[activeWorkload] || null} />
           <ExperimentalMetadata metadata={activeEvalRun?.environmentMetadata || activeRun?.metadata || null} />
         </div>
         

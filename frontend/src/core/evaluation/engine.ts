@@ -1,5 +1,5 @@
 import { WorkloadId, RuntimeType } from '../types';
-import { SelectionPolicy } from '../selection/types';
+import { FrozenSelectionPolicy } from '../selection/types';
 import { selectRuntime } from '../selection/selector';
 import { 
   EvaluationConfig, 
@@ -20,12 +20,30 @@ import { sha256Wasm } from '../workloads/wasm';
 
 import { analyzeWorkload } from '../selection/analyzer';
 
+export function validateEvaluationConfig(config: EvaluationConfig, policy: FrozenSelectionPolicy) {
+  if (config.warmupIterations < 0 || !Number.isInteger(config.warmupIterations)) throw new Error('Invalid warmupIterations');
+  if (config.measurementIterations <= 0 || !Number.isInteger(config.measurementIterations)) throw new Error('Invalid measurementIterations');
+  if (!config.evaluationGridSizes || config.evaluationGridSizes.length === 0) throw new Error('Grid must be non-empty');
+  
+  const calibGrid = policy.workloads[config.workloadId]?.provenance.gridSizes || [];
+  
+  for (let i = 0; i < config.evaluationGridSizes.length; i++) {
+    const size = config.evaluationGridSizes[i];
+    if (size < 0 || !Number.isInteger(size)) throw new Error('Invalid grid size');
+    if (i > 0 && size <= config.evaluationGridSizes[i-1]) throw new Error('Grid must be strictly ascending with no duplicates');
+    if (calibGrid.includes(size)) throw new Error(`Grid overlap with calibration: ${size}`);
+  }
+}
+
 export function calculateSummary(trials: EvaluationTrial[]): EvaluationSummaryStats | null {
-  // Only summarize warm trials that were NOT part of the warmup phase
-  const measurementTrials = trials.filter(t => t.phase === 'warm' && !t.isWarmup && !t.error);
+  // Only summarize warm trials that were NOT part of the warmup phase and didn't error
+  const measurementTrials = trials.filter(t => t.phase === 'warm' && !t.isWarmup && !t.error && typeof t.elapsedMs === 'number');
   if (measurementTrials.length === 0) return null;
 
-  const times = measurementTrials.map(t => t.elapsedMs).sort((a, b) => a - b);
+  const times = measurementTrials.map(t => {
+    if (t.elapsedMs! < 0 || !Number.isFinite(t.elapsedMs)) throw new Error('Invalid elapsedMs');
+    return t.elapsedMs!;
+  }).sort((a, b) => a - b);
   
   const count = times.length;
   const min = times[0];
@@ -54,8 +72,6 @@ function getWorkloadRunner(workloadId: WorkloadId, config: EvaluationConfig) {
         return multiplyMatricesWasm(a, b, size);
       }
     } else if (workloadId === 'sort') {
-      // Sort generator does not support offset, so we just use size to dictate array size.
-      // Evaluation independence is achieved by evaluating distinct sizes.
       const input = generateSortInput(size);
       if (runtime === 'javascript') {
         return mergeSortJS(input);
@@ -76,18 +92,21 @@ function getWorkloadRunner(workloadId: WorkloadId, config: EvaluationConfig) {
 
 export async function* runEvaluation(
   config: EvaluationConfig,
-  policy: SelectionPolicy,
+  policy: FrozenSelectionPolicy,
   experimentRunId: string
 ): AsyncGenerator<EvaluationRun, EvaluationRun, void> {
+  validateEvaluationConfig(config, policy);
+
   const run: EvaluationRun = {
     experimentRunId,
     config,
     environmentMetadata: {
       browser: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
-      os: 'Unknown', // Explicit OS/CPU might not be fully exposed
-      cpu: typeof navigator !== 'undefined' ? `${navigator.hardwareConcurrency} cores` : 'Unknown',
-      ram: typeof navigator !== 'undefined' && 'deviceMemory' in navigator 
-           ? `${((navigator as unknown) as { deviceMemory: number }).deviceMemory}GB` 
+      os: 'Unknown', 
+      cpuModel: 'Unavailable',
+      logicalProcessorCount: typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : 'Unknown',
+      approximateDeviceMemoryGB: typeof navigator !== 'undefined' && 'deviceMemory' in navigator 
+           ? ((navigator as unknown) as { deviceMemory: number }).deviceMemory
            : 'Unknown',
       timestamp: new Date().toISOString(),
       warmupIterations: config.warmupIterations,
@@ -109,8 +128,9 @@ export async function* runEvaluation(
   const runner = getWorkloadRunner(config.workloadId, config);
 
   for (const size of config.evaluationGridSizes) {
+    // Deterministic evaluation case ID based on generation parameters
     const evalCase: EvaluationCase = {
-      evaluationCaseId: `${experimentRunId}-${size}`,
+      evaluationCaseId: `${config.workloadId}-sz${size}-off${config.generationOffset}`,
       workloadId: config.workloadId,
       inputSize: size,
       jsTrials: [],
@@ -149,7 +169,6 @@ export async function* runEvaluation(
           isWarmup,
           executionMode: 'javascript',
           selectedRuntime: 'javascript',
-          elapsedMs: 0,
           error: String(err),
           timestamp: new Date().toISOString()
         });
@@ -182,7 +201,6 @@ export async function* runEvaluation(
           isWarmup,
           executionMode: 'wasm',
           selectedRuntime: 'wasm',
-          elapsedMs: 0,
           error: String(err),
           timestamp: new Date().toISOString()
         });
@@ -195,11 +213,12 @@ export async function* runEvaluation(
       const phase = isCold ? 'cold' : 'warm';
       const isWarmup = i < config.warmupIterations;
       
+      let selectedRuntime: RuntimeType | undefined = undefined;
       try {
         // Selection overhead measurement
         const sStart = performance.now();
         const characteristics = analyzeWorkload(config.workloadId, size);
-        const selectedRuntime = selectRuntime(characteristics, policy);
+        selectedRuntime = selectRuntime(characteristics, policy);
         const sEnd = performance.now();
         const selectionOverheadMs = sEnd - sStart;
 
@@ -224,8 +243,7 @@ export async function* runEvaluation(
           phase,
           isWarmup,
           executionMode: 'adaptive',
-          selectedRuntime: 'javascript', // Default fallback in error recording
-          elapsedMs: 0,
+          selectedRuntime,
           error: String(err),
           timestamp: new Date().toISOString()
         });
