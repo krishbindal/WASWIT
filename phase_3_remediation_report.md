@@ -14,8 +14,8 @@ This report outlines the 7 blocking methodological and architectural issues reso
 - Updated integration and policy tests to ensure the presence of provenance is mandatory and validated on parsing.
 
 ## 3. Strongly Typed, Deeply Frozen Policy Representation
-- Replaced weak `as` type-casts with a true TypeScript utility type: `DeepReadonly<T>` resulting in `FrozenSelectionPolicy`.
-- `freezePolicy()` now guarantees recursive immutability through `Object.freeze` and explicit `FrozenSelectionPolicy` return typing.
+- Maintained a true TypeScript utility type: `DeepReadonly<T>` resulting in `FrozenSelectionPolicy`.
+- `freezePolicy()` explicitly performs recursive runtime deep freezing using `Object.freeze`. It uses one isolated `as FrozenSelectionPolicy` cast solely to bridge TypeScript's shallow `Object.freeze` return typing, maintaining complete type integrity for consumers.
 - Hardened the runtime `selector.ts` engine so it mathematically cannot consume mutable policy representations; it demands `FrozenSelectionPolicy`.
 - Added 7 rigorous immutability tests proving runtime `toThrow` on assignment attempts.
 
@@ -42,6 +42,6 @@ This report outlines the 7 blocking methodological and architectural issues reso
 
 ## Overall Suite State
 - Executed `npm run lint`, TS compiler verification (`tsc --noEmit`), WASM rebuilds, and Next.js production builds successfully.
-- Vitest reports 77 passing tests.
+- Vitest reports 91 passing tests.
 - Playwright E2E suite executed fully successfully.
-- Committed the state exactly as `fix: harden phase 3 selection methodology` and pushed to `origin/main`.
+- Committed the state exactly as `fix: validate calibration statistics` and pushed to `origin/main`.

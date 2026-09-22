@@ -58,6 +58,63 @@ describe('Calibrator - Derivation', () => {
     expect(() => deriveWorkloadPolicy(record)).toThrow(/Missing required/);
   });
 
+  describe('Invalid Benchmark Statistics', () => {
+    it('throws on NaN median', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.median = NaN;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid median/);
+    });
+
+    it('throws on Infinity median', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].wasmStats!.median = Infinity;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid median/);
+    });
+
+    it('throws on negative median', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.median = -5;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid median/);
+    });
+
+    it('throws on NaN mean', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].wasmStats!.mean = NaN;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid mean/);
+    });
+
+    it('throws on Infinity mean', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.mean = Infinity;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid mean/);
+    });
+
+    it('throws on invalid count (0)', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.count = 0;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid count/);
+    });
+
+    it('throws on negative count', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].wasmStats!.count = -1;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid count/);
+    });
+
+    it('throws on min > max', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = 100;
+      record.results[0].jsStats!.max = 50;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/cannot be greater than max/);
+    });
+    
+    it('throws on negative min', () => {
+      const record = makeRecord(['javascript']);
+      record.results[0].jsStats!.min = -1;
+      expect(() => deriveWorkloadPolicy(record)).toThrow(/Invalid min/);
+    });
+  });
+
   it('throws on contradictory preferredRuntime', () => {
     const record = makeRecord(['javascript']);
     // Fake the measurement to disagree with the stored preference

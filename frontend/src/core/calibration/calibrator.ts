@@ -138,6 +138,27 @@ export function derivePreferredRuntime(jsStats: BenchmarkStats, wasmStats: Bench
   return 'tie';
 }
 
+function validateBenchmarkStats(stats: BenchmarkStats, label: string): void {
+  if (typeof stats.count !== 'number' || !Number.isInteger(stats.count) || stats.count <= 0) {
+    throw new Error(`Invalid count in ${label}: must be a positive integer, got ${stats.count}`);
+  }
+  
+  const validateMetric = (name: string, value: number) => {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+      throw new Error(`Invalid ${name} in ${label}: must be a non-negative finite number, got ${value}`);
+    }
+  };
+
+  validateMetric('min', stats.min);
+  validateMetric('max', stats.max);
+  validateMetric('mean', stats.mean);
+  validateMetric('median', stats.median);
+  
+  if (stats.min > stats.max) {
+    throw new Error(`Invalid stats in ${label}: min (${stats.min}) cannot be greater than max (${stats.max})`);
+  }
+}
+
 /**
  * Strictly validates that a CalibrationRecord is completely consistent with its configuration.
  */
@@ -159,6 +180,9 @@ export function validateCalibrationRecord(record: CalibrationRecord): void {
     if (!pt.jsStats || !pt.wasmStats) {
       throw new Error(`Missing required JS or Wasm measurements for size ${pt.inputSize}`);
     }
+    
+    validateBenchmarkStats(pt.jsStats, `jsStats at size ${pt.inputSize}`);
+    validateBenchmarkStats(pt.wasmStats, `wasmStats at size ${pt.inputSize}`);
   }
 }
 
