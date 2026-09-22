@@ -10,7 +10,9 @@ import { BenchmarkChart } from './BenchmarkChart';
 import { CalibrationTable } from './CalibrationTable';
 import { ExperimentalMetadata } from './ExperimentalMetadata';
 import { VisualizationDataTable } from './VisualizationDataTable';
-import { ResearchRun } from '@/core/research/types';
+import { EvaluationControl } from './EvaluationControl';
+import { ResearchRun, VisualizationPoint } from '@/core/research/types';
+import { EvaluationRun } from '@/core/evaluation/types';
 
 interface DashboardShellProps {
   runs: Partial<Record<WorkloadId, ResearchRun>>;
@@ -18,7 +20,18 @@ interface DashboardShellProps {
 
 export function DashboardShell({ runs }: DashboardShellProps) {
   const [activeWorkload, setActiveWorkload] = useState<WorkloadId>('matrix');
+  const [evalRuns, setEvalRuns] = useState<Partial<Record<WorkloadId, EvaluationRun>>>({});
+  
   const activeRun = runs[activeWorkload];
+  const activeEvalRun = evalRuns[activeWorkload];
+
+  // Map evalRun to VisualizationPoints for the charts
+  const evalVisualizations: VisualizationPoint[] = activeEvalRun ? activeEvalRun.cases.map(c => ({
+    inputSize: c.inputSize,
+    jsMedian: c.jsSummary?.median,
+    wasmMedian: c.wasmSummary?.median,
+    adaptiveMedian: c.adaptiveSummary?.median,
+  })) : [];
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 text-gray-800">
@@ -28,6 +41,7 @@ export function DashboardShell({ runs }: DashboardShellProps) {
           <div className="flex gap-2 mt-2">
             <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 3 Certified</span>
             <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 4A UI</span>
+            <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 4B Eval</span>
             {activeRun?.policy ? (
               <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs font-semibold">Policy Loaded</span>
             ) : (
@@ -40,6 +54,12 @@ export function DashboardShell({ runs }: DashboardShellProps) {
       <WorkloadSelector selected={activeWorkload} onSelect={setActiveWorkload} />
       
       <WorkloadSummary workloadId={activeWorkload} />
+      
+      <EvaluationControl 
+        workloadId={activeWorkload} 
+        policy={activeRun?.policy || null} 
+        onEvaluationComplete={(run) => setEvalRuns(prev => ({ ...prev, [run.config.workloadId]: run }))}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
@@ -49,13 +69,13 @@ export function DashboardShell({ runs }: DashboardShellProps) {
             derivationRule={activeRun?.policyDerivationRule || null}
           />
           <PolicyThresholdTable policy={activeRun?.policy || null} />
-          <ExperimentalMetadata metadata={activeRun?.metadata || null} />
+          <ExperimentalMetadata metadata={activeEvalRun?.environmentMetadata || activeRun?.metadata || null} />
         </div>
         
         <div className="space-y-6">
           <CalibrationTable record={activeRun?.calibrationData || null} />
-          <BenchmarkChart data={activeRun?.visualizations || []} />
-          <VisualizationDataTable data={activeRun?.visualizations || []} />
+          <BenchmarkChart data={evalVisualizations.length > 0 ? evalVisualizations : (activeRun?.visualizations || [])} />
+          <VisualizationDataTable data={evalVisualizations.length > 0 ? evalVisualizations : (activeRun?.visualizations || [])} />
         </div>
       </div>
     </div>
