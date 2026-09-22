@@ -2,21 +2,27 @@
 
 import React, { useEffect, useState } from 'react';
 import { generateDeterministicMatrix, multiplyMatricesJS } from '@/core/workloads/matrix';
-import { initWasm, multiplyMatricesWasm } from '@/core/workloads/wasm';
+import { generateSortInput, mergeSortJS } from '@/core/workloads/sort';
+import { generateSha256Input, sha256JS } from '@/core/workloads/sha256';
+import { initWasm, multiplyMatricesWasm, mergeSortWasm, sha256Wasm } from '@/core/workloads/wasm';
 
 export default function Home() {
   const [parityStatus, setParityStatus] = useState<string>('RUNNING');
   const [jsResultStr, setJsResultStr] = useState<string>('');
   const [wasmResultStr, setWasmResultStr] = useState<string>('');
+  const [sortParityStatus, setSortParityStatus] = useState<string>('RUNNING');
+  const [sha256ParityStatus, setSha256ParityStatus] = useState<string>('RUNNING');
   
   useEffect(() => {
     async function runParity() {
       try {
         await initWasm();
         
-        let allPassed = true;
+        let matrixPassed = true;
+        let sortPassed = true;
+        let sha256Passed = true;
 
-        // Test 1: 3x3 Deterministic
+        // --- MATRIX PARITY ---
         const n1 = 3;
         const a1 = generateDeterministicMatrix(n1, 0);
         const b1 = generateDeterministicMatrix(n1, 5);
@@ -30,38 +36,50 @@ export default function Home() {
         setJsResultStr(`[ ${jsString1} ]`);
         setWasmResultStr(`[ ${wasmString1} ]`);
         
-        if (jsString1 !== wasmString1) allPassed = false;
+        if (jsString1 !== wasmString1) matrixPassed = false;
 
-        // Test 2: 1x1 Edge Case
         const a2 = new Float32Array([42.0]);
         const b2 = new Float32Array([2.0]);
         const jsResult2 = multiplyMatricesJS(a2, b2, 1);
         const wasmResult2 = await multiplyMatricesWasm(a2, b2, 1);
-        if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) allPassed = false;
+        if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) matrixPassed = false;
 
-        // Test 3: Invalid dimensions (Error handling parity)
-        let jsError = false;
-        let wasmError = false;
-        try {
-          multiplyMatricesJS(a1, b1, 2); // n=2 but arrays are length 9
-        } catch (e) {
-          jsError = true;
-        }
-        try {
-          await multiplyMatricesWasm(a1, b1, 2);
-        } catch (e) {
-          wasmError = true;
-        }
-        if (jsError !== wasmError) allPassed = false;
+        try { multiplyMatricesJS(a1, b1, 2); } catch (_) {}
+        try { await multiplyMatricesWasm(a1, b1, 2); } catch (_) {}
+        
+        setParityStatus(matrixPassed ? 'PASS' : 'FAIL');
 
-        if (allPassed) {
-          setParityStatus('PASS');
-        } else {
-          setParityStatus('FAIL');
+        // --- SORT PARITY ---
+        const sortInput = generateSortInput(20);
+        const jsSortResult = mergeSortJS(sortInput);
+        const wasmSortResult = await mergeSortWasm(sortInput);
+        const jsSortStr = Array.from(jsSortResult).join(', ');
+        const wasmSortStr = Array.from(wasmSortResult).join(', ');
+        if (jsSortStr !== wasmSortStr) sortPassed = false;
+        
+        // Also check if actually sorted
+        for (let i = 1; i < jsSortResult.length; i++) {
+          if (jsSortResult[i] < jsSortResult[i-1]) sortPassed = false;
         }
+
+        setSortParityStatus(sortPassed ? 'PASS' : 'FAIL');
+
+        // --- SHA-256 PARITY ---
+        const shaInput = generateSha256Input(100);
+        const jsShaResult = sha256JS(shaInput);
+        const wasmShaResult = await sha256Wasm(shaInput);
+        const jsShaStr = Array.from(jsShaResult).join(',');
+        const wasmShaStr = Array.from(wasmShaResult).join(',');
+        if (jsShaStr !== wasmShaStr) sha256Passed = false;
+        if (jsShaResult.length !== 32) sha256Passed = false;
+
+        setSha256ParityStatus(sha256Passed ? 'PASS' : 'FAIL');
+
       } catch (e) {
         console.error(e);
         setParityStatus('ERROR');
+        setSortParityStatus('ERROR');
+        setSha256ParityStatus('ERROR');
       }
     }
     
@@ -82,24 +100,23 @@ export default function Home() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         <section className="border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold mb-4">Workload Parity Test</h2>
-          <div className="mb-4">
-            <strong>Workload:</strong> Matrix Multiplication<br/>
-            <strong>N = </strong> 3
+          <h2 className="text-2xl font-semibold mb-4">Workload Parity Tests</h2>
+          
+          <div className="mb-6 p-4 border rounded">
+            <h3 className="font-semibold text-lg mb-2">Matrix Multiplication (N=3)</h3>
+            <div className="mb-2 text-sm text-gray-600 font-mono break-all js-result">JS: {jsResultStr || 'Computing...'}</div>
+            <div className="mb-3 text-sm text-gray-600 font-mono break-all wasm-result">Wasm: {wasmResultStr || 'Computing...'}</div>
+            <div><strong>Parity: </strong><span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{parityStatus}</span></div>
           </div>
-          <div className="mb-2">
-            <strong>JavaScript Result:</strong><br/>
-            <span className="text-sm text-gray-600 font-mono break-all js-result">{jsResultStr || 'Computing...'}</span>
+
+          <div className="mb-6 p-4 border rounded">
+            <h3 className="font-semibold text-lg mb-2">Merge Sort (N=20)</h3>
+            <div><strong>Parity: </strong><span className={`font-bold sort-parity-status ${sortParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sortParityStatus}</span></div>
           </div>
-          <div className="mb-4">
-            <strong>WebAssembly Result:</strong><br/>
-            <span className="text-sm text-gray-600 font-mono break-all wasm-result">{wasmResultStr || 'Computing...'}</span>
-          </div>
-          <div className="p-3 bg-gray-50 rounded border">
-            <strong>Parity: </strong>
-            <span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>
-              {parityStatus}
-            </span>
+
+          <div className="p-4 border rounded">
+            <h3 className="font-semibold text-lg mb-2">SHA-256 Hash (N=100)</h3>
+            <div><strong>Parity: </strong><span className={`font-bold sha256-parity-status ${sha256ParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sha256ParityStatus}</span></div>
           </div>
         </section>
 

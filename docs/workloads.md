@@ -12,15 +12,19 @@ To effectively test the WASWIT selection engine, algorithms must be implemented 
 - **JS/Wasm Boundary:** When arrays are passed to WebAssembly using `wasm-bindgen` (`&[f32]`), Wasm linear memory is allocated, and the raw JavaScript `Float32Array` values are copied in. When the Wasm function returns a `Vec<f32>`, `wasm-bindgen` copies those memory values back out into a newly allocated JS `Float32Array`. Thus, execution incurs memory allocation and direct TypedArray-to-Wasm memory copying overhead across the boundary. It is **not** zero-copy, but it completely bypasses the overhead of JS-object serialization/deserialization. We intentionally defer optimization of this copying overhead to later benchmarking phases to scientifically measure its impact.
 - **Input Strategy:** Deterministically generated numeric values to guarantee perfect testability without introducing pseudo-random seed logic.
 
-## Future Provisional Workloads
-To keep the scope manageable for a single developer, we recommend selecting **2** additional workloads for the final evaluation from the following candidates:
+## 2. Array Sorting — Merge Sort (Implemented - Phase 2)
+- **Nature:** Recursive logic, high memory manipulation, deterministic array partitioning.
+- **Variable:** Array length (`N`).
+- **Justification:** Implementing an explicit algorithm (Merge Sort) in both environments avoids relying on browser-native optimizations like `Array.prototype.sort`. This tests raw algorithmic performance across the JS/Wasm divide, distinct from numeric matrix math.
+- **Data Representation:** `Int32Array`. Returns a new `Int32Array` containing the sorted elements without mutating the caller's input.
+- **JS/Wasm Boundary:** Like Matrix Multiplication, copies typed array data into Wasm memory and copies the sorted result back out.
+- **Input Strategy:** Deterministically generated elements containing negatives and duplicates, computed via a linear congruential formula from indices.
 
-### 2. Array Sorting (e.g., QuickSort or MergeSort)
-- **Nature:** Recursive logic, high memory manipulation.
-- **Variable:** Array length (N).
-- **Justification:** JavaScript engines are highly optimized for sorting native JS arrays. This will test whether the cost of transferring an array to Wasm, sorting it, and returning it can outpace JS's native engine optimizations at larger scales.
-
-### 3. Cryptographic Hashing (e.g., SHA-256)
-- **Nature:** Bitwise operations, integer mathematics.
-- **Variable:** String/buffer length in bytes.
-- **Justification:** Historically, JS struggled with bitwise operations compared to compiled languages. This workload provides a distinct computational profile from matrix math.
+## 3. Cryptographic Hashing — SHA-256 (Implemented - Phase 2)
+- **Nature:** Extensive bitwise operations, 32-bit integer arithmetic.
+- **Variable:** Input length in bytes (`N`).
+- **Justification:** SHA-256 requires precise 32-bit arithmetic, a known historical weak point of JavaScript compared to compiled languages like Rust. This workload provides a distinct, heavy bitwise computational profile.
+- **Data Representation:** Input `Uint8Array`, output `Uint8Array(32)`.
+- **JS/Wasm Boundary:** Copies byte chunks to WebAssembly and returns a fixed 32-byte digest array.
+- **Implementation Strategy:** Pure implementations in both JS and Rust. Does not use native browser APIs (like `crypto.subtle`) or external Rust crates.
+- **Input Strategy:** Deterministically generated `Uint8Array` bytes derived from index-based formulas to ensure strict reproducible equality across JS and Rust tests.

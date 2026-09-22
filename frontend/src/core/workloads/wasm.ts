@@ -5,7 +5,7 @@
  */
 
 // Import the generated Wasm functions from the local directory
-import init, { multiply_matrices_wasm } from '../../wasm/waswit_wasm';
+import init, { multiply_matrices_wasm, merge_sort_wasm, sha256_wasm } from '../../wasm/waswit_wasm';
 
 let initialized = false;
 
@@ -30,7 +30,21 @@ export async function initWasm() {
  */
 export async function multiplyMatricesWasm(a: Float32Array, b: Float32Array, n: number): Promise<Float32Array> {
   await initWasm();
-  
-  // The wasm_bindgen generated function takes Float32Array and returns Float32Array natively
   return multiply_matrices_wasm(a, b, n);
+}
+
+/**
+ * Sorts an Int32Array using Merge Sort in WebAssembly.
+ */
+export async function mergeSortWasm(input: Int32Array): Promise<Int32Array> {
+  await initWasm();
+  return merge_sort_wasm(input);
+}
+
+/**
+ * Computes SHA-256 digest of a Uint8Array using WebAssembly.
+ */
+export async function sha256Wasm(message: Uint8Array): Promise<Uint8Array> {
+  await initWasm();
+  return sha256_wasm(message);
 }

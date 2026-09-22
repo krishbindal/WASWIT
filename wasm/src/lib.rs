@@ -33,6 +33,12 @@ pub fn multiply_matrices_wasm(a: &[f32], b: &[f32], n: usize) -> Result<Vec<f32>
 }
 
 // Add simple Rust-side unit tests to ensure algorithmic correctness
+mod sort;
+mod sha256;
+
+pub use sort::*;
+pub use sha256::*;
+
 #[cfg(test)]
 mod tests {
     use super::*;

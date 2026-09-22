@@ -1,13 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-test('WASWIT application computes Matrix Multiplication parity correctly', async ({ page }) => {
+test('WASWIT application computes Workload Parity correctly for all workloads', async ({ page }) => {
   await page.goto('/');
 
   // Wait for the parity computation to complete
-  const parityStatus = page.locator('.parity-status');
-  await expect(parityStatus).toHaveText('PASS', { timeout: 10000 });
+  const matrixParityStatus = page.locator('.parity-status');
+  await expect(matrixParityStatus).toHaveText('PASS', { timeout: 10000 });
 
-  // Ensure JS and Wasm results exist and are identical
+  const sortParityStatus = page.locator('.sort-parity-status');
+  await expect(sortParityStatus).toHaveText('PASS', { timeout: 10000 });
+
+  const sha256ParityStatus = page.locator('.sha256-parity-status');
+  await expect(sha256ParityStatus).toHaveText('PASS', { timeout: 10000 });
+
+  // Ensure JS and Wasm results exist and are identical for Matrix
   const jsResult = page.locator('.js-result');
   const wasmResult = page.locator('.wasm-result');
   
@@ -15,6 +21,6 @@ test('WASWIT application computes Matrix Multiplication parity correctly', async
   const wasmText = await wasmResult.textContent();
   
   expect(jsText).toBeTruthy();
-  expect(jsText).not.toBe('Computing...');
-  expect(jsText).toEqual(wasmText);
+  expect(jsText).not.toBe('JS: Computing...');
+  expect(jsText?.replace('JS: ', '')).toEqual(wasmText?.replace('Wasm: ', ''));
 });
