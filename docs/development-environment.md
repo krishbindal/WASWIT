@@ -42,22 +42,45 @@ To develop locally, ensure you have:
 
 ## Commands
 
-### Setup and Build
-Execute these commands from within the `frontend/` directory:
-- **Install dependencies:** `npm install --legacy-peer-deps`
-- **Build WebAssembly module:** `npm run build:wasm` (Compiles Rust Wasm directly to `frontend/src/wasm`)
-- **Run development server:** `npm run dev`
-- **Build production bundle:** `npm run build` (Automatically triggers `build:wasm` prior to Next.js build)
-- **Run production server:** `npm run start`
+### Clean Clone Setup Sequence
+To verify reproducible builds on a fresh clone, run the following sequence:
 
-### Testing
-- **Run JS unit tests:** `npx vitest run` (Inside `frontend/`)
-- **Run E2E parity tests:** `npx playwright test` (Inside `frontend/`)
-- **Run Rust tests:** `cargo test` (Inside `wasm/`)
-- **Check Rust syntax/types:** `cargo check` (Inside `wasm/`)
+```bash
+# 1. Clone and enter directory
+git clone https://github.com/krishbindal/WASWIT.git
+cd WASWIT/frontend
 
-## Important Architectural Boundaries
-- **UI vs Logic:** React components in `frontend/src/app` must NOT contain direct benchmarking or execution loops. They solely dispatch requests to `frontend/src/core/benchmark`.
+# 2. Install dependencies strictly from package-lock.json
+npm ci
+
+# 3. Build WebAssembly module (Compiles Rust directly to frontend/src/wasm)
+npm run build:wasm
+
+# 4. Check formatting and linting
+npm run lint
+
+# 5. Run JS unit tests
+npx vitest run
+
+# 6. Verify Rust logic
+cd ../wasm
+cargo check
+cargo test
+
+# 7. Run JS/Wasm browser parity tests
+cd ../frontend
+npx playwright test
+
+# 8. Build production Next.js app
+npm run build
+```
+
+*(Note: `frontend/src/wasm` is a generated artifact directory created by `npm run build:wasm` and is intentionally ignored by version control to ensure each environment builds the Wasm module natively).*
+
+### Running the application
+After the setup above, you can run the application with:
+- **Development server:** `npm run dev`
+- **Production server:** `npm run start` (Requires `npm run build` first)
 - **Analyzer vs Selector:** The analyzer only categorizes data. The selector strictly uses predefined thresholds to route.
 
 ## Unresolved Implementation Decisions

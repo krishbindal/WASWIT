@@ -24,5 +24,5 @@ Because WASWIT is a research-focused experimental framework, the testing strateg
 - **Verification:** Ensures the application handles out-of-memory errors gracefully (especially WebAssembly memory allocation limits) without crashing the entire browser tab.
 
 ## 6. Performance Benchmarking & Reproducibility
-- **What:** Running the same benchmark suite multiple times on the same machine using fixed-seed deterministic inputs.
+- **What:** Running the same benchmark suite multiple times on the same machine using deterministically generated inputs.
 - **Verification:** Ensures that the variance between runs is statistically manageable and that raw data preservation functions correctly.
