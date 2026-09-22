@@ -22,9 +22,9 @@ To evaluate WASWIT's methodology rigorously, we separate our metrics into Primar
    - *How it is measured:* By comparing the end-to-end execution time against internal timing mechanisms placed exclusively around the raw Rust computation, subtracting the latter from the former.
 
 2. **Selection Overhead (ms)**
-   - *What it means:* The time taken by the WASWIT engine to evaluate the input characteristics (e.g., check array length) and route the function call.
-   - *Why it matters:* If the routing logic is too slow, it negates the benefit of adaptive execution.
-   - *How it is measured:* Timing the logic branch before the execution layer is invoked.
+   - *What it means:* The time taken by the WASWIT engine to evaluate input characteristics and execute the deterministic routing logic using the frozen policy.
+   - *Why it matters:* If the routing logic is too slow, it negates the benefit of adaptive execution. This metric is strictly separate from the workload execution time itself.
+   - *How it is measured:* Timing the Workload Analyzer and Runtime Selector sequence independently before the execution layer is invoked.
 
 3. **Initialization/Instantiation Overhead (ms)**
    - *What it means:* The cost of fetching, validating, and compiling the Wasm module upon first load.

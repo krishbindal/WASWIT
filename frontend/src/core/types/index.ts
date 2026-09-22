@@ -7,9 +7,11 @@
 export type ExecutionMode = 'javascript' | 'wasm' | 'adaptive';
 export type RuntimeType = 'javascript' | 'wasm';
 
+export type WorkloadId = 'matrix' | 'sort' | 'sha256';
+
 export interface WorkloadMetadata {
-  /** Uniquely identifies the workload type (e.g., 'matrix_multiplication') */
-  id: string;
+  /** Uniquely identifies the workload type */
+  id: WorkloadId;
   /** Primary variable size (e.g., matrix dimension N, array length) */
   inputSize: number;
 }

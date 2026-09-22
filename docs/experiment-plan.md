@@ -7,18 +7,18 @@ To ensure statistical validity and prevent circular logic, the methodology is st
 
 ---
 
-## 1. Calibration Phase (Threshold Discovery)
-The goal of this phase is to characterize the performance of JS and Wasm independently and establish the decision boundaries (thresholds) for the WASWIT engine.
+## 1. Calibration Phase (Threshold Discovery - Phase 3 Implemented)
+The goal of this phase is to characterize the performance of JS and Wasm independently and establish the decision boundaries (thresholds) for the WASWIT engine. This phase is implemented as a standalone offline engine separate from live execution.
 
-1. **Deterministic Input Generation:** Inputs (arrays, strings, matrices) will be generated using fixed-seed PRNGs to ensure exact repeatability across runs.
-2. **Execution Sweeps:** For each workload, we will run sweeps of increasing input sizes (e.g., array lengths from 10 to 1,000,000).
-3. **Warm-up:** For each input size, the function will be executed 10 times without recording metrics to allow JS JIT compilation and Wasm memory stabilization.
-4. **Measurement:** Post warm-up, the function will execute 50 times in pure JS and 50 times in pure Wasm.
-5. **Threshold Calculation:** The crossover point—the input size at which Wasm consistently yields a lower median execution time than JS (accounting for data-handling overhead)—is identified.
+1. **Deterministic Input Generation:** Inputs (arrays, strings, matrices) are generated using exact fixed-seed algorithmic logic to ensure repeatable equality.
+2. **Execution Sweeps:** For each workload, the calibrator runs explicit sweeps of defined grid sizes (e.g., Matrix N, Array Length, Byte Length).
+3. **Warm-up:** For each input size, the function executes `warmupIterations` without recording metrics to allow JS JIT compilation and Wasm memory stabilization.
+4. **Measurement:** Post warm-up, the function executes `measurementIterations` in pure JS and pure Wasm.
+5. **Threshold Calculation:** The calibrator derives a discrete transition boundary using a conservative median comparison rule. The output is an explicit policy artifact, distinguishing calibration bounds from evaluation parameters.
 
-## 2. Freeze the Selection Policy
-After the Calibration Phase, the decision thresholds are hardcoded into the WASWIT Selection Engine. 
-**Crucial Rule:** No further tuning of these thresholds will occur based on the results of the subsequent Evaluation Phase.
+## 2. Freeze the Selection Policy (Phase 3 Implemented)
+After Calibration, the derived boundaries are embedded into an explicit, deeply frozen `SelectionPolicy` object.
+**Crucial Rule:** The live `Selector` is a pure function. It does not benchmark, it does not adapt to execution history, and no tuning of thresholds will occur based on the results of the subsequent Evaluation Phase.
 
 ## 3. Independent Evaluation Phase
 The goal of this phase is to test the frozen WASWIT engine against the static baselines.

@@ -1,0 +1,57 @@
+import { SelectionPolicy, WorkloadPolicy, SelectionRule } from './types';
+import { WorkloadId } from '../types';
+
+/**
+ * Validates a policy and ensures it is well-formed.
+ * The rules within each workload policy must be strictly ordered by maxInputSize ascending.
+ * There should be no duplicate maxInputSizes.
+ */
+export function validatePolicy(policy: SelectionPolicy): void {
+  if (!policy.version) throw new Error('Policy must have a version');
+  if (!policy.derivationRule) throw new Error('Policy must have a derivationRule');
+
+  for (const [id, wp] of Object.entries(policy.workloads)) {
+    if (!wp) continue;
+    if (wp.workloadId !== id) {
+      throw new Error(`Workload ID mismatch in policy mapping for ${id}`);
+    }
+    let lastSize = -1;
+    for (const rule of wp.rules) {
+      if (rule.maxInputSize <= lastSize) {
+        throw new Error(`Rules must be strictly ordered by maxInputSize. Found ${rule.maxInputSize} after ${lastSize} in ${id}.`);
+      }
+      if (rule.runtime !== 'javascript' && rule.runtime !== 'wasm') {
+        throw new Error(`Invalid runtime in policy for ${id}: ${rule.runtime}`);
+      }
+      lastSize = rule.maxInputSize;
+    }
+    if (wp.defaultRuntime !== 'javascript' && wp.defaultRuntime !== 'wasm') {
+      throw new Error(`Invalid defaultRuntime in policy for ${id}: ${wp.defaultRuntime}`);
+    }
+  }
+}
+
+/**
+ * Deep freezes a selection policy to enforce immutability.
+ * This guarantees the policy cannot be modified dynamically at runtime.
+ */
+export function freezePolicy(policy: SelectionPolicy): SelectionPolicy {
+  validatePolicy(policy);
+  
+  const frozenWorkloads: Partial<Record<WorkloadId, WorkloadPolicy>> = {};
+  
+  for (const [key, value] of Object.entries(policy.workloads)) {
+    if (!value) continue;
+    frozenWorkloads[key as WorkloadId] = Object.freeze({
+      workloadId: value.workloadId,
+      defaultRuntime: value.defaultRuntime,
+      rules: Object.freeze(value.rules.map(r => Object.freeze({ ...r }))) as unknown as SelectionRule[]
+    });
+  }
+
+  return Object.freeze({
+    version: policy.version,
+    derivationRule: policy.derivationRule,
+    workloads: Object.freeze(frozenWorkloads)
+  });
+}

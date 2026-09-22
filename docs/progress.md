@@ -58,11 +58,17 @@
 - Deterministic reproducible input generators for each workload. (Merge Sort uses the exact 32-bit LCG generator; SHA-256 uses its deterministic index-based byte formula; Matrix multiplication uses deterministic index-derived numeric values.)
 - Unified E2E Playwright `parity.spec.ts` proving zero-skip equivalence across JS and Wasm.
 
-## Phase 3: Selection Engine & Adaptive Logic (Pending)
-**Status:** Not Started
+## Phase 3: Selection Engine & Adaptive Logic (Completed - Phase 3)
+**Status:** Completed & Verified
 **Goals:**
-- Calibrate crossover thresholds.
-- Build the WASWIT runtime selection engine.
+- Implement the WASWIT workload analyzer.
+- Build the deterministic offline calibration derivation engine.
+- Deploy a deeply frozen, pure-function runtime selection engine.
+**Key Deliverables:**
+- Generic `analyzer` extracting deterministic Workload Characteristics without evaluation side effects.
+- Strict `SelectionPolicy` type enforcing versioning and rule ordering.
+- Offline `calibrator` sweeping parameter grids using the Benchmark Engine to derive policies based on median timing thresholds.
+- Pure `selector` executing against deeply frozen rules, defaulting correctly for unseen bounds, independent of historical runtime observation.
 
 ## Phase 4: UI & Visualization (Pending)
 **Status:** Not Started

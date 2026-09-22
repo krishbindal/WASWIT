@@ -6,16 +6,20 @@ WASWIT is designed as a modular, browser-based framework. The architecture stric
 
 ```text
 User / UI
-  ↓
+  |
 Workload Adapter
-  ↓
+  |
+Workload Analyzer  --> (Extracts deterministic characteristics)
+  |
+Runtime Selection  <-- (Consumes characteristics + Frozen Selection Policy)
+  |
 Execution Interface
-  ├── JavaScript Implementation
-  └── WebAssembly Implementation (Rust/wasm-pack)
-  ↓
+  +--> JavaScript Implementation
+  +--> WebAssembly Implementation (Rust/wasm-pack)
+  |
 Result Verification
 ```
-*(Benchmarking, Workload Analyzer, and Runtime Selection Engine will be layered onto this execution path in future phases.)*
+*(Calibration engine generates the frozen policy in a separate offline loop.)*
 
 ## Logical Modules
 
@@ -25,20 +29,20 @@ Result Verification
 2. **Workload Adapter & Execution Interface (Phase 1B):** 
    A clean abstraction for computational workloads providing deterministic input generation, data representation formats, and routing to specific runtimes.
 
-3. **JavaScript / WebAssembly Execution Layers (Phase 1B):** 
-   Isolated layers that contain the actual algorithmic implementations (e.g., Matrix Multiplication). Algorithmic parity is rigorously enforced across both layers.
+3. **JavaScript / WebAssembly Execution Layers (Phase 1B & Phase 2):** 
+   Isolated layers that contain the actual algorithmic implementations (Matrix Multiplication, Merge Sort, SHA-256). Algorithmic parity is rigorously enforced across both layers.
 
-4. **Workload Analyzer (Future):** 
-   A lightweight pre-processing step that exclusively inspects the incoming data (e.g., array length, matrix dimensions) and passes this metadata forward. It does *not* make routing decisions.
+4. **Workload Analyzer (Phase 3):** 
+   A lightweight pre-processing step that exclusively inspects incoming data configurations (e.g., array length, matrix dimensions) to produce deterministic workload characteristics. It does *not* make routing decisions and does *not* benchmark.
 
-5. **Runtime Selection Engine (WASWIT Core) (Future):** 
-   Contains the decision logic. It consumes metadata from the Analyzer and uses empirical thresholds (determined during the separate Calibration Phase) to route the workload. It does *not* execute the workload.
+5. **Selection Policy & Runtime Selector (Phase 3):** 
+   The core decision logic. Consumes characteristics from the Analyzer and a *frozen*, immutable policy to route the workload deterministically. It has no side effects, executes no benchmarks, and does not remember past behavior.
 
-6. **Benchmark & Calibration Engine (Future):** 
-   A dedicated runner used to perform input sweeps, discover crossovers, and establish thresholds. This logic is strictly separated from the Evaluation Engine.
+6. **Calibration Engine (Phase 3):** 
+   A dedicated runner used to perform input sweeps, discover crossovers, and establish thresholds (producing the Selection Policy). This is strictly executed offline and its logic is decoupled from live selection.
 
 7. **Evaluation & Measurement Engine (Future):** 
-   The runner used to test the frozen WASWIT logic against static baselines, utilizing the Browser Performance API to accurately record execution times and data-handling overhead.
+   The runner used to test the frozen WASWIT logic against static baselines, utilizing the Benchmark engine to accurately record final adaptive execution times.
 
 8. **Visualization (Future):** 
    Consumes the raw metric data and plots comparative charts. It is entirely decoupled from the measurement process.
