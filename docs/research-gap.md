@@ -1,17 +1,14 @@
-# Research Gap Analysis
+# Preliminary Research Gap
 
-## Overview of Existing Work
-From our review of prior art and literature:
-1. Extensive benchmarking exists comparing JavaScript and WebAssembly statically.
-2. The overhead of the JS-Wasm boundary (memory transfer and serialization) is widely acknowledged in academia.
-3. Adaptive routing exists in the browser, primarily for Machine Learning tasks (routing between CPU/Wasm and GPU/WebGL) or Edge/Cloud offloading.
+## Context
+Based on the literature reviewed so far, the performance trade-offs between JavaScript and WebAssembly are well-documented (Herrera et al., 2021; Macedo et al., 2022). Furthermore, adaptive execution is actively used in specialized domains, such as routing ML models to GPUs (e.g., TensorFlow.js) or offloading mobile tasks to the cloud.
 
-## Preliminary Research Gap — Requires Further Validation
-While developers intuitively know to use JavaScript for small, DOM-heavy tasks and WebAssembly for heavy computations, this decision is almost exclusively made at **compile-time**. A developer hardcodes the application to call either the JS function or the Wasm function.
+## Provisional Research Gap
+An area that appears less explored is the application of deterministic, workload-aware runtime selection for general-purpose computational tasks *entirely within the local browser CPU environment*.
 
-**The Gap:** There is a lack of general-purpose, browser-side frameworks that make deterministic, **runtime** decisions to select between identical JavaScript and WebAssembly implementations based on the immediate input size and empirical crossover thresholds. 
+While the community acknowledges that JS is better for small tasks and Wasm for large, compute-heavy tasks (due to initialization and memory-boundary overhead), developers currently must make a static, compile-time decision on which language to use.
 
-Most research asks: *"Which is faster, JS or Wasm?"*
-This project asks: *"Given an arbitrary input at runtime, can the system automatically route to the faster environment to optimize overall application efficiency?"*
+Subject to further validation, there is an opportunity to investigate whether a lightweight, local selection engine—using empirically calibrated thresholds based on input size—can automatically route a workload to the optimal environment at runtime, achieving better overall performance than a static decision.
 
-By focusing on deterministic thresholding rather than complex ML, WASWIT aims to explore this specific execution-routing gap entirely within the local browser sandbox.
+## WASWIT's Proposed Contribution
+WASWIT proposes exploring this specific gap by building and evaluating a framework that dynamically routes general computational algorithms to either JS or Wasm using measured thresholds. This is a proposed exploration, and the validity of this approach remains to be tested in the planned experiments.

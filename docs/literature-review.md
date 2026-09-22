@@ -1,15 +1,19 @@
 # Literature Review
 
-## 1. WebAssembly Fundamentals
-WebAssembly (Wasm) is a binary instruction format designed as a portable compilation target for high-level languages like C, C++, and Rust. The browser execution model guarantees isolation (sandboxing) while achieving near-native execution speed. However, Wasm relies on JavaScript for DOM manipulation and Web API access. Passing data between JS and Wasm involves writing to and reading from WebAssembly's linear memory, which introduces serialization/deserialization overhead.
+This section reviews established academic findings regarding WebAssembly performance and hybrid browser execution.
 
-## 2. JavaScript vs WebAssembly Performance
-Academic literature generally agrees on the following performance characteristics:
-- **Compute-Intensive Tasks:** WebAssembly consistently outperforms JavaScript in CPU-bound tasks such as heavy integer operations, cryptographic hashing, and media encoding.
-- **The JS-Wasm Bridge:** Research emphasizes that the performance cost of boundary crossing between JS and Wasm is non-trivial. For small payloads or low-intensity calculations, this overhead often negates Wasm's computational speed advantage.
-- **Initialization Cost:** Loading, validating, and compiling Wasm modules incurs a startup cost that must be amortized over the execution time. JavaScript, aided by advanced JIT compilation, often performs better for very short, instantaneous tasks.
+## 1. WebAssembly vs. JavaScript Performance
+Current academic literature reveals a nuanced picture of WebAssembly performance compared to JavaScript:
+- **Workload Dependency:** WebAssembly can provide substantial performance benefits for specific computational workloads, particularly those involving intensive integer arithmetic or predictable loop structures. However, researchers emphasize that Wasm's performance advantage varies significantly depending on the environment, compiler toolchain, and workload (Herrera et al., *"Understanding the Performance of WebAssembly Applications"*, ACM IMC 2021).
+- **JIT Competitiveness:** JavaScript engines are highly optimized. For certain workloads—particularly those involving dynamic objects or floating-point calculations—JavaScript can be highly competitive (Macedo et al., *"WebAssembly versus JavaScript: Energy and Runtime Performance"*, IEEE ICT4S 2022). WebAssembly is NOT universally faster than native code or highly-JIT-optimized JavaScript (Jangda et al., *"Not So Fast: Analyzing the Performance of WebAssembly vs. Native Code"*, USENIX ATC 2019).
 
-## 3. Workload-Aware and Adaptive Execution
-The concept of adaptive execution is prevalent in distributed systems and cloud computing (e.g., edge-vs-cloud offloading). In the browser environment:
-- Frameworks like ONNX Runtime Web utilize a hybrid approach, dynamically routing AI inference workloads to different backends (Wasm, WebGL, WebGPU) based on hardware availability and model requirements.
-- However, for general-purpose browser execution, the decision to use JS or Wasm is largely made at compile-time by the developer. Dynamic, deterministic runtime selection for standard computational algorithms based on input size remains an underexplored optimization in standard web development.
+## 2. JS↔Wasm Boundary Overhead
+A critical theme in Wasm research is the impact of the JS-Wasm boundary. Calling a Wasm function from JS is not free. 
+- Research indicates that the boundary overhead—arising from function-call transitions, data representation mismatch, copying arrays to/from linear memory, and allocation costs—can create significant bottlenecks (Lehmann et al., *"SoK: Analysis Techniques for WebAssembly"*).
+- For very fast algorithms or small input sizes, the overhead of invoking the Wasm module and managing its memory can take longer than simply executing the calculation directly in JavaScript.
+
+## 3. Adaptive and Hybrid Execution
+Hybrid execution architectures are actively researched, though they take varying forms:
+- **Computation Offloading:** Much of the existing literature focuses on Edge-to-Cloud offloading, where the browser dynamically shifts workloads to a server based on network constraints.
+- **Hardware Routing (Machine Learning):** In browser-based machine learning (e.g., TensorFlow.js, ONNX Runtime Web), frameworks dynamically select between execution backends (CPU via Wasm, or GPU via WebGL/WebGPU) based on hardware availability and tensor properties.
+- **Local Adaptive Routing:** Using empirical thresholds to route purely computational, non-ML algorithms between local JavaScript and local WebAssembly based on input size remains an area that appears less systematically explored in general web development frameworks.

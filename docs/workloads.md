@@ -1,31 +1,29 @@
 # Representative Workloads
 
-To effectively test the WASWIT selection engine, we need algorithms that can be implemented cleanly in both JavaScript and WebAssembly, and where the computational complexity scales cleanly with the input size.
+To effectively test the WASWIT selection engine, we need algorithms that can be implemented cleanly in both JavaScript and WebAssembly (via Rust).
 
-## Proposed Workloads — Final Selection Pending Implementation Validation
+**Note:** The following workloads are *Provisional* and are subject to implementation and pilot benchmark validation. We do not assume that all workloads will inherently favor WebAssembly; some may strongly favor JavaScript due to JIT optimizations or memory handling.
+
+## Provisional Workload Candidates
+
+To keep the scope manageable for a single developer, we recommend selecting **3** of the following workloads for the final evaluation.
 
 ### 1. Matrix Multiplication
-- **Why:** Highly compute-intensive with $O(N^3)$ time complexity. It relies heavily on tight loops and array access, which traditionally favors WebAssembly.
+- **Nature:** Heavy integer/float arithmetic, tight nested loops.
 - **Variable:** Matrix dimensions (N x N).
-- **Measurement:** Highlights pure CPU performance vs. memory boundary overhead.
+- **Justification:** A classic compute-intensive algorithm. It provides an excellent baseline for measuring raw CPU performance against the overhead of copying multi-dimensional data into Wasm linear memory.
 
-### 2. Large-scale Array Sorting
-- **Why:** Sorting is a common operation. Implementing algorithms like QuickSort or MergeSort allows testing recursive logic and memory manipulation. 
+### 2. Array Sorting (e.g., QuickSort or MergeSort)
+- **Nature:** Recursive logic, high memory manipulation.
 - **Variable:** Array length (N).
-- **Measurement:** Tests how boundary overhead (copying the array to Wasm linear memory) affects tasks with $O(N \log N)$ complexity. JS might win on smaller arrays due to zero-copy overhead.
+- **Justification:** JavaScript engines are highly optimized for sorting native JS arrays. This will test whether the cost of transferring an array to Wasm, sorting it, and returning it can outpace JS's native engine optimizations at larger scales.
 
 ### 3. Cryptographic Hashing (e.g., SHA-256)
-- **Why:** Relies on bitwise operations and integer mathematics, where JavaScript's Number type (Float64) historically struggled before BigInt and JIT improvements. Rust/Wasm handles bitwise operations natively.
+- **Nature:** Bitwise operations, integer mathematics.
 - **Variable:** String/buffer length in bytes.
-- **Measurement:** Excellent for observing boundary overhead vs. bitwise computation speed.
+- **Justification:** Historically, JS struggled with bitwise operations compared to compiled languages. This workload provides a distinct computational profile from matrix math.
 
 ### 4. Prime Number Generation (Sieve of Eratosthenes)
-- **Why:** A classic integer and boolean array manipulation workload.
-- **Variable:** The maximum limit (N) to find primes up to.
-- **Measurement:** Tests memory allocation limits and iterative computational speed.
-
-## Evaluation Criteria for Finalization
-Before full implementation, these workloads will be validated against:
-1. Ease of equivalent implementation in both JS and Rust.
-2. Ability to cleanly isolate the timing of the boundary crossing from the timing of the raw computation.
-3. Reproducibility across multiple browser runs.
+- **Nature:** Boolean array manipulation, iterative processing.
+- **Variable:** Maximum integer limit (N).
+- **Justification:** Useful for testing memory allocation and boundary overhead when returning potentially large arrays of integers back to JavaScript.

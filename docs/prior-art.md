@@ -1,26 +1,24 @@
 # Prior Art
 
-An investigation into existing academic papers and technical frameworks reveals several approaches to JavaScript and WebAssembly performance optimization.
+An investigation into existing academic literature and technical implementations reveals several approaches to performance optimization and execution selection.
 
-## 1. WebAssembly vs JavaScript Performance Analyses
-- **Understanding the Performance of WebAssembly Applications (IMC '21)**
-  - *What it does:* Analyzes Wasm performance across different compilers and execution environments.
-  - *Execution Environment:* Browser and standalone runtimes.
-  - *Relevance:* Demonstrates that Wasm's advantage varies wildly by workload and compiler toolchain, confirming that Wasm is not universally faster.
+## 1. Browser ML Runtimes (e.g., ONNX Runtime Web, TensorFlow.js)
+- **Problem solved:** Efficiently running machine learning models in the browser.
+- **Environment:** Local web browser.
+- **Runtimes involved:** JavaScript, WebAssembly, WebGL, WebGPU.
+- **Selection mechanism:** Primarily hardware capability detection (falling back from WebGPU to WebGL to Wasm) and tensor characteristic profiling.
+- **How it differs from WASWIT:** These systems are highly specialized for ML tensors and focus heavily on GPU offloading. WASWIT focuses on general-purpose computational algorithms executed strictly on the CPU, balancing JS against Wasm based on input size.
 
-- **WebAssembly versus JavaScript: Energy and Runtime Performance (INESC TEC)**
-  - *What it does:* Systematically compares the energy consumption and execution speed of JS and Wasm.
-  - *Relevance:* Highlights that while Wasm is often more energy-efficient for computation, JS remains highly competitive for certain types of operations due to JIT optimization.
+## 2. Static Performance Benchmarks (e.g., Herrera et al., 2021)
+- **Problem solved:** Systematically comparing Wasm and JS to understand architectural trade-offs.
+- **Environment:** Browsers and standalone runtimes (V8, SpiderMonkey, Wasmtime).
+- **Runtimes involved:** JavaScript and WebAssembly.
+- **Selection mechanism:** N/A (Static benchmarking).
+- **How it differs from WASWIT:** These papers provide the foundational metrics confirming that JS is sometimes faster than Wasm depending on the workload and overhead. However, they do not attempt to build a runtime framework that automatically switches between them.
 
-## 2. Adaptive Runtime Frameworks
-- **ONNX Runtime Web / TensorFlow.js**
-  - *What it does:* Executes machine learning models in the browser.
-  - *Selection Mechanism:* Performs runtime selection between CPU (Wasm) and GPU (WebGL/WebGPU) backends based on hardware capabilities and model types.
-  - *Relevance to WASWIT:* Demonstrates that runtime selection in the browser is feasible and beneficial, though these frameworks focus exclusively on ML tensors and GPU offloading rather than JS vs Wasm computational balancing.
-
-- **Edge-to-Cloud Computation Offloading (Various academic papers)**
-  - *What it does:* Dynamically decides whether to run a workload on the local browser or offload it to a cloud server based on network latency and local CPU availability.
-  - *Relevance to WASWIT:* Uses similar theoretical models (profiling and threshold-based routing) but applied to network architecture rather than local language execution boundaries.
-
-## Summary
-Current prior art largely focuses on *comparing* JS and Wasm statically, or routing workloads between local CPU and local GPU. 
+## 3. Mobile-Cloud Offloading Systems
+- **Problem solved:** Saving battery or increasing speed on mobile devices by sending tasks to the cloud.
+- **Environment:** Mobile browser / Cloud servers.
+- **Runtimes involved:** Local JavaScript/Wasm vs. Remote Node/Native.
+- **Selection mechanism:** Network latency and local CPU availability thresholds.
+- **How it differs from WASWIT:** These systems route over a network. WASWIT routes entirely within the local sandbox, avoiding network unreliability and focusing strictly on the local JS-Wasm boundary overhead.

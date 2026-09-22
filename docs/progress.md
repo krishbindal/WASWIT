@@ -1,13 +1,13 @@
 # Project Progress
 
-## Phase 0: Foundation & Research Specification
+## Phase 0: Research Correction & Methodology Revision
 **Status:** Completed
 **Key Deliverables:**
-- Initialized Git repository.
-- Conducted literature review and prior art research.
-- Defined research questions and identified the preliminary research gap.
-- Outlined project scope, proposed workloads, and performance metrics.
-- Documented preliminary architecture, technology stack, and testing strategy.
+- Corrected JS vs. Wasm performance claims to align with academic literature.
+- Separated experimental methodology into independent Calibration and Evaluation phases.
+- Refined primary and secondary metrics.
+- Updated literature review and prior art with proper academic citations.
+- Redefined the research gap as a proposed approach rather than a proven novelty.
 
 ## Phase 1: Environment Setup & Core Implementation (Pending)
 **Status:** Not Started

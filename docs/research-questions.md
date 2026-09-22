@@ -1,15 +1,15 @@
 # Research Questions
 
-The primary goal of WASWIT is to evaluate the effectiveness of workload-aware execution selection. To guide the methodology and experiments, this project will answer the following research questions:
+The primary goal of WASWIT is to evaluate the effectiveness of workload-aware execution selection. The project is guided by the following objective research questions:
 
 ## RQ1
-**How does the relative performance of JavaScript and WebAssembly vary across different computational workloads and input sizes?**
-*Purpose:* To empirically determine the performance cross-over points where WebAssembly becomes more efficient than JavaScript (and vice-versa) for specific algorithms, accounting for boundary overhead.
+**How does the relative performance of JavaScript and WebAssembly vary across selected computational workloads and input sizes?**
+*Context:* This requires empirically documenting the execution times of both languages, specifically accounting for JS JIT optimizations and the JS↔Wasm data-handling boundary overhead.
 
 ## RQ2
-**Which measurable workload characteristics are useful for selecting between JavaScript and WebAssembly?**
-*Purpose:* To identify deterministic variables (e.g., array length, byte size, matrix dimensions) that can be reliably measured in the browser at runtime with minimal latency to inform the selection engine.
+**Which measurable workload characteristics are useful for dynamically selecting between JavaScript and WebAssembly?**
+*Context:* We must identify variables (such as array length, buffer byte size, or matrix dimensions) that can be measured at runtime with negligible latency to serve as inputs for a decision threshold.
 
 ## RQ3
-**Can workload-aware runtime selection provide better overall execution efficiency than always selecting JavaScript or always selecting WebAssembly?**
-*Purpose:* To evaluate the proposed WASWIT architecture. We will compare the total execution time of the adaptive system against static JS-only and static Wasm-only baselines.
+**Can a workload-aware runtime-selection mechanism achieve competitive or improved overall performance relative to always using JavaScript or always using WebAssembly?**
+*Context:* This question evaluates the proposed WASWIT architecture. It asks whether the overhead of the selection logic combined with the chosen thresholds actually results in a measurable, aggregate efficiency gain.

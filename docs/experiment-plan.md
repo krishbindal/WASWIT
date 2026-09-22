@@ -3,23 +3,38 @@
 ## Objective
 To conduct a fair, reproducible comparison between JavaScript-only, WebAssembly-only, and WASWIT adaptive execution models.
 
-## Execution Modes
-For every workload and input size, the system will run in three distinct modes:
-1. **Static JavaScript:** The task is executed entirely using the JavaScript implementation.
-2. **Static WebAssembly:** The task is executed entirely using the Rust-compiled Wasm implementation.
-3. **WASWIT Adaptive:** The WASWIT engine evaluates the input size and routes to either JS or Wasm based on pre-defined empirical thresholds.
+To ensure statistical validity and prevent circular logic, the methodology is strictly separated into a **Calibration Phase** and an **Independent Evaluation Phase**.
 
-## Testing Procedure
-1. **Input Generation:** For a specific workload, generate input data deterministically (e.g., seeded random arrays or fixed-pattern matrices).
-2. **Warm-up Phase:** Execute the function 5-10 times without recording metrics. This allows the JS engine to JIT-compile the code and the Wasm module to stabilize in memory.
-3. **Measurement Phase:** Execute the function $N$ times (e.g., 50 iterations) for each mode.
-4. **Data Collection:** Record the execution time for every iteration using `performance.now()`.
-5. **Threshold Discovery (Calibration):** Before testing the Adaptive mode, an initial sweep of input sizes will be performed to identify the "crossover point" (the threshold where Wasm becomes faster than JS).
+---
 
-## Controlling Variables
-- **Environment:** Tests will be run locally without other intensive applications running.
-- **Browser:** The specific browser version (e.g., Chrome 120+) will be documented and kept consistent.
-- **Data Integrity:** We will verify that both JS and Wasm implementations return the exact same output for the same input to ensure algorithmic parity.
+## 1. Calibration Phase (Threshold Discovery)
+The goal of this phase is to characterize the performance of JS and Wasm independently and establish the decision boundaries (thresholds) for the WASWIT engine.
 
-## Reporting
-Results will be preserved as raw JSON data and summarized using statistical measures (mean, median, standard deviation) to mitigate outliers caused by browser garbage collection.
+1. **Deterministic Input Generation:** Inputs (arrays, strings, matrices) will be generated using fixed-seed PRNGs to ensure exact repeatability across runs.
+2. **Execution Sweeps:** For each workload, we will run sweeps of increasing input sizes (e.g., array lengths from 10 to 1,000,000).
+3. **Warm-up:** For each input size, the function will be executed 10 times without recording metrics to allow JS JIT compilation and Wasm memory stabilization.
+4. **Measurement:** Post warm-up, the function will execute 50 times in pure JS and 50 times in pure Wasm.
+5. **Threshold Calculation:** The crossover point—the input size at which Wasm consistently yields a lower median execution time than JS (accounting for data-handling overhead)—is identified.
+
+## 2. Freeze the Selection Policy
+After the Calibration Phase, the decision thresholds are hardcoded into the WASWIT Selection Engine. 
+**Crucial Rule:** No further tuning of these thresholds will occur based on the results of the subsequent Evaluation Phase.
+
+## 3. Independent Evaluation Phase
+The goal of this phase is to test the frozen WASWIT engine against the static baselines.
+
+1. **Independent Workloads:** We will generate *new* workload instances (different seeds or varying mixed-size batches) that were not used during calibration.
+2. **Execution Modes:** The workload batch will be executed entirely in:
+   - Mode A: Static JavaScript-only
+   - Mode B: Static WebAssembly-only
+   - Mode C: WASWIT Adaptive
+3. **Measurement Integrity:** We will measure Total Execution Time, explicitly recording cold executions (first run) separately from warm executions (subsequent runs).
+
+## 4. Analysis and Handling of Results
+- **Summary Statistics:** We will use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean with Standard Deviation** to report variability.
+- **Outlier Handling:** Extreme outliers (e.g., caused by OS-level interrupts) will be retained in raw data but noted if they significantly skew the standard deviation.
+- **Environment Recording:** Every test run will strictly log:
+  - Browser name and version (e.g., Chrome 120.x)
+  - Operating System
+  - Hardware specifications (CPU tier, RAM)
+- **Raw Data Preservation:** All raw JSON timing data will be saved to ensure reproducibility and transparency.
