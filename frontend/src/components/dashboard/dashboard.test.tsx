@@ -6,7 +6,7 @@ import { PolicySummary } from './PolicySummary';
 import { PolicyThresholdTable } from './PolicyThresholdTable';
 import { ExperimentalMetadata } from './ExperimentalMetadata';
 import { CalibrationTable } from './CalibrationTable';
-import { RawDataTable } from './RawDataTable';
+import { VisualizationDataTable } from './VisualizationDataTable';
 import { BenchmarkChart } from './BenchmarkChart';
 import { WorkloadPolicy } from '@/core/selection/types';
 import { ExperimentMetadata, VisualizationPoint } from '@/core/research/types';
@@ -53,8 +53,15 @@ describe('Dashboard Components', () => {
       expect(container2.textContent).toContain('No experimental results available yet');
     });
 
-    it('renders policy summary accurately', () => {
-      render(<PolicySummary policy={mockPolicy} />);
+    it('renders policy summary accurately with distinct version and derivation rule', () => {
+      render(<PolicySummary 
+        policy={mockPolicy} 
+        version="1.0.0" 
+        derivationRule="median-crossover-consistent-v2" 
+      />);
+      expect(screen.getByText('Policy Version')).toBeDefined();
+      expect(screen.getByText('1.0.0')).toBeDefined();
+      expect(screen.getByText('Derivation Rule')).toBeDefined();
       expect(screen.getByText('median-crossover-consistent-v2')).toBeDefined();
       expect(screen.getByText('100, 500')).toBeDefined();
       expect(screen.getByText('5 / 10')).toBeDefined();
@@ -100,14 +107,14 @@ describe('Dashboard Components', () => {
     });
   });
 
-  describe('RawDataTable & BenchmarkChart', () => {
+  describe('VisualizationDataTable & BenchmarkChart', () => {
     const mockData: VisualizationPoint[] = [
       { inputSize: 100, jsMedian: 5.5, wasmMedian: 2.2, adaptiveMedian: 2.2 },
       { inputSize: 500, jsMedian: 15.5, wasmMedian: 12.2, adaptiveMedian: 12.2 }
     ];
 
     it('renders empty state for table', () => {
-      render(<RawDataTable data={[]} />);
+      render(<VisualizationDataTable data={[]} />);
       expect(screen.getByText('No experimental results available yet')).toBeDefined();
     });
 
@@ -116,8 +123,9 @@ describe('Dashboard Components', () => {
       expect(screen.getByText('No experimental results available yet')).toBeDefined();
     });
 
-    it('renders data points accurately in table', () => {
-      render(<RawDataTable data={mockData} />);
+    it('renders data points accurately in table and avoids claiming raw samples', () => {
+      render(<VisualizationDataTable data={mockData} />);
+      expect(screen.getByText('Visualization Data Summary')).toBeDefined();
       expect(screen.getByText('100')).toBeDefined();
       expect(screen.getByText('5.5000')).toBeDefined();
     });

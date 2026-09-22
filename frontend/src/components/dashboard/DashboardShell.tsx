@@ -9,7 +9,7 @@ import { PolicyThresholdTable } from './PolicyThresholdTable';
 import { BenchmarkChart } from './BenchmarkChart';
 import { CalibrationTable } from './CalibrationTable';
 import { ExperimentalMetadata } from './ExperimentalMetadata';
-import { RawDataTable } from './RawDataTable';
+import { VisualizationDataTable } from './VisualizationDataTable';
 import { ResearchRun } from '@/core/research/types';
 
 interface DashboardShellProps {
@@ -43,7 +43,11 @@ export function DashboardShell({ runs }: DashboardShellProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <PolicySummary policy={activeRun?.policy || null} />
+          <PolicySummary 
+            policy={activeRun?.policy || null} 
+            version={activeRun?.policyVersion || null}
+            derivationRule={activeRun?.policyDerivationRule || null}
+          />
           <PolicyThresholdTable policy={activeRun?.policy || null} />
           <ExperimentalMetadata metadata={activeRun?.metadata || null} />
         </div>
@@ -51,7 +55,7 @@ export function DashboardShell({ runs }: DashboardShellProps) {
         <div className="space-y-6">
           <CalibrationTable record={activeRun?.calibrationData || null} />
           <BenchmarkChart data={activeRun?.visualizations || []} />
-          <RawDataTable data={activeRun?.visualizations || []} />
+          <VisualizationDataTable data={activeRun?.visualizations || []} />
         </div>
       </div>
     </div>

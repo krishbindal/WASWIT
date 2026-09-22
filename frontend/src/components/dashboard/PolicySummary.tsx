@@ -2,7 +2,15 @@ import React from 'react';
 import { WorkloadPolicy } from '@/core/selection/types';
 import { EmptyState } from './EmptyState';
 
-export function PolicySummary({ policy }: { policy: WorkloadPolicy | null }) {
+export function PolicySummary({ 
+  policy, 
+  version, 
+  derivationRule 
+}: { 
+  policy: WorkloadPolicy | null;
+  version?: string | null;
+  derivationRule?: string | null;
+}) {
   if (!policy) {
     return <EmptyState message="No experimental results available yet" />;
   }
@@ -13,7 +21,11 @@ export function PolicySummary({ policy }: { policy: WorkloadPolicy | null }) {
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-gray-500 block">Policy Version</span>
-          <span className="font-mono text-gray-800">median-crossover-consistent-v2</span>
+          <span className="font-mono text-gray-800">{version ?? 'Unknown'}</span>
+        </div>
+        <div>
+          <span className="text-gray-500 block">Derivation Rule</span>
+          <span className="font-mono text-gray-800">{derivationRule ?? 'Unknown'}</span>
         </div>
         <div>
           <span className="text-gray-500 block">Default Runtime</span>

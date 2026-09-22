@@ -25,5 +25,7 @@ export interface ResearchRun {
   metadata: ExperimentMetadata;
   calibrationData: CalibrationRecord | null;
   policy: WorkloadPolicy | null;
+  policyVersion?: string | null;
+  policyDerivationRule?: string | null;
   visualizations: VisualizationPoint[];
 }

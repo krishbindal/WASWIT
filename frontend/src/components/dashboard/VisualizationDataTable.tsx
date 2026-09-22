@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { VisualizationPoint } from '@/core/research/types';
 import { EmptyState } from './EmptyState';
 
-export function RawDataTable({ data }: { data: VisualizationPoint[] }) {
+export function VisualizationDataTable({ data }: { data: VisualizationPoint[] }) {
   const [expanded, setExpanded] = useState(false);
 
   if (!data || data.length === 0) {
@@ -14,7 +14,7 @@ export function RawDataTable({ data }: { data: VisualizationPoint[] }) {
   return (
     <div className="p-4 border rounded bg-white shadow-sm overflow-x-auto">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="font-semibold">Raw Measurement Summary</h3>
+        <h3 className="font-semibold">Visualization Data Summary</h3>
         {data.length > 5 && (
           <button 
             onClick={() => setExpanded(!expanded)}
