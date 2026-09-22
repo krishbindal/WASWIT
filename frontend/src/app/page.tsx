@@ -14,20 +14,47 @@ export default function Home() {
       try {
         await initWasm();
         
-        const n = 3;
-        const a = generateDeterministicMatrix(n, 0);
-        const b = generateDeterministicMatrix(n, 5);
+        let allPassed = true;
+
+        // Test 1: 3x3 Deterministic
+        const n1 = 3;
+        const a1 = generateDeterministicMatrix(n1, 0);
+        const b1 = generateDeterministicMatrix(n1, 5);
         
-        const jsResult = multiplyMatricesJS(a, b, n);
-        const wasmResult = await multiplyMatricesWasm(a, b, n);
+        const jsResult1 = multiplyMatricesJS(a1, b1, n1);
+        const wasmResult1 = await multiplyMatricesWasm(a1, b1, n1);
         
-        const jsString = Array.from(jsResult).join(', ');
-        const wasmString = Array.from(wasmResult).join(', ');
+        const jsString1 = Array.from(jsResult1).join(', ');
+        const wasmString1 = Array.from(wasmResult1).join(', ');
         
-        setJsResultStr(`[ ${jsString} ]`);
-        setWasmResultStr(`[ ${wasmString} ]`);
+        setJsResultStr(`[ ${jsString1} ]`);
+        setWasmResultStr(`[ ${wasmString1} ]`);
         
-        if (jsString === wasmString) {
+        if (jsString1 !== wasmString1) allPassed = false;
+
+        // Test 2: 1x1 Edge Case
+        const a2 = new Float32Array([42.0]);
+        const b2 = new Float32Array([2.0]);
+        const jsResult2 = multiplyMatricesJS(a2, b2, 1);
+        const wasmResult2 = await multiplyMatricesWasm(a2, b2, 1);
+        if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) allPassed = false;
+
+        // Test 3: Invalid dimensions (Error handling parity)
+        let jsError = false;
+        let wasmError = false;
+        try {
+          multiplyMatricesJS(a1, b1, 2); // n=2 but arrays are length 9
+        } catch (e) {
+          jsError = true;
+        }
+        try {
+          await multiplyMatricesWasm(a1, b1, 2);
+        } catch (e) {
+          wasmError = true;
+        }
+        if (jsError !== wasmError) allPassed = false;
+
+        if (allPassed) {
           setParityStatus('PASS');
         } else {
           setParityStatus('FAIL');

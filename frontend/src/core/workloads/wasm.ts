@@ -4,8 +4,8 @@
  * Provides an interface to interact with the generated WebAssembly module.
  */
 
-// Import the generated Wasm functions
-import init, { multiply_matrices_wasm } from 'waswit-wasm';
+// Import the generated Wasm functions from the local directory
+import init, { multiply_matrices_wasm } from '../../wasm/waswit_wasm';
 
 let initialized = false;
 

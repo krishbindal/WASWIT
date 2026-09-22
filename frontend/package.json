@@ -4,15 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build:wasm": "cd ../wasm && wasm-pack build --target web --out-dir ../frontend/src/wasm",
+    "build": "npm run build:wasm && next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
     "next": "16.3.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "waswit-wasm": "file:../wasm/pkg/waswit-wasm-0.1.0.tgz"
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

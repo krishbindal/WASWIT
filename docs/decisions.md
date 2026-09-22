@@ -19,8 +19,8 @@ This document serves as an architectural decision record (ADR) for the WASWIT pr
 **Rationale:** Although `wasm-pack` creates a package that is later integrated into the frontend workspace, committing `Cargo.lock` ensures that anyone building the Wasm module locally (using `wasm-pack build`) receives identical dependency versions, providing reproducible benchmark environments.
 
 ## 5. WebAssembly Frontend Integration
-**Decision:** Package `waswit-wasm` via `npm pack` and install from tarball rather than symlinking.
-**Rationale:** Next.js 15+ (with Turbopack) strictly validates `node_modules` file resolutions. Using a standard `file:../wasm/pkg` causes Turbopack to fail when resolving WebAssembly modules due to symlink boundaries. Packing the Wasm output into a `.tgz` tarball and installing that directly cleanly sidesteps these strict bundler constraints while preserving local dependency management.
+**Decision:** Build the WebAssembly module directly into `frontend/src/wasm` via a custom `build:wasm` npm script, avoiding `node_modules` entirely.
+**Rationale:** Next.js 15+ (with Turbopack) strictly validates `node_modules` file resolutions, causing `file:../wasm/pkg` symlinks to fail. While an `npm pack` tarball bypassed the symlink issue, it broke clean-clone reproducibility since the unversioned tarball was missing on fresh clones. By instructing `wasm-pack` to output directly into `src/wasm` and tracking that folder in `.gitignore`, we guarantee a reproducible build pipeline (`npm run build` triggers `build:wasm`) where Turbopack correctly bundles the Wasm files without strict module boundary complaints.
 
 ## Unresolved Decisions
 - **Web Workers:** Should benchmarks run on the main thread (risking UI freezes) or in a Web Worker (introducing messaging overhead)? This will be evaluated via pilot experiments during implementation.

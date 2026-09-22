@@ -42,21 +42,19 @@ To develop locally, ensure you have:
 
 ## Commands
 
-### Frontend (Next.js)
+### Setup and Build
 Execute these commands from within the `frontend/` directory:
 - **Install dependencies:** `npm install --legacy-peer-deps`
+- **Build WebAssembly module:** `npm run build:wasm` (Compiles Rust Wasm directly to `frontend/src/wasm`)
 - **Run development server:** `npm run dev`
-- **Build production bundle:** `npm run build`
+- **Build production bundle:** `npm run build` (Automatically triggers `build:wasm` prior to Next.js build)
 - **Run production server:** `npm run start`
-- **Run unit tests:** `npx vitest run`
-- **Run E2E tests:** `npx playwright test`
-- **Run linter:** `npm run lint`
 
-### WebAssembly (Rust)
-Execute these commands from within the `wasm/` directory (Rust is verified and installed):
-- **Build Wasm package:** `wasm-pack build --target web`
-- **Run Rust tests:** `cargo test`
-- **Check Rust syntax/types:** `cargo check`
+### Testing
+- **Run JS unit tests:** `npx vitest run` (Inside `frontend/`)
+- **Run E2E parity tests:** `npx playwright test` (Inside `frontend/`)
+- **Run Rust tests:** `cargo test` (Inside `wasm/`)
+- **Check Rust syntax/types:** `cargo check` (Inside `wasm/`)
 
 ## Important Architectural Boundaries
 - **UI vs Logic:** React components in `frontend/src/app` must NOT contain direct benchmarking or execution loops. They solely dispatch requests to `frontend/src/core/benchmark`.

@@ -8,7 +8,8 @@ To effectively test the WASWIT selection engine, algorithms must be implemented 
 - **Nature:** Heavy integer/float arithmetic, tight nested loops.
 - **Variable:** Matrix dimensions (N x N).
 - **Justification:** A classic compute-intensive algorithm. It provides an excellent baseline for measuring raw CPU performance against the overhead of copying flat array data into Wasm linear memory.
-- **Data Representation:** Flat row-major array (`Float32Array`). For an N x N matrix, the length is N*N. This flat structure minimizes boundary-crossing serialization costs.
+- **Data Representation:** Flat row-major array (`Float32Array`). For an N x N matrix, the length is N*N. This flat structure minimizes JS-object serialization costs.
+- **JS/Wasm Boundary:** When arrays are passed to WebAssembly using `wasm-bindgen` (`&[f32]`), Wasm linear memory is allocated, and the JavaScript `Float32Array` values are copied in. When the Wasm function returns a `Vec<f32>`, `wasm-bindgen` copies those values back out into a newly allocated JS `Float32Array`. Thus, execution incurs memory allocation and copying overhead across the boundary. It is **not** zero-copy. We intentionally defer optimization of this overhead to later benchmarking phases to scientifically measure the impact of strict boundary serialization.
 - **Input Strategy:** Deterministically generated numeric values to guarantee perfect testability without introducing pseudo-random seed logic.
 
 ## Future Provisional Workloads
