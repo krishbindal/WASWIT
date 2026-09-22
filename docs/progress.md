@@ -55,7 +55,7 @@
 - Pure JS and Rust `Merge Sort` accepting `Int32Array` returning new sorted arrays.
 - Pure JS and Rust `SHA-256` hashing strictly mimicking the 32-bit algorithm over `Uint8Array`.
 - No reliance on `Array.prototype.sort()`, `crypto.subtle`, or external cryptographic crates.
-- Deterministic index-based linear congruential input generators.
+- Deterministic reproducible input generators for each workload. (Merge Sort uses the exact 32-bit LCG generator; SHA-256 uses its deterministic index-based byte formula; Matrix multiplication uses deterministic index-derived numeric values.)
 - Unified E2E Playwright `parity.spec.ts` proving zero-skip equivalence across JS and Wasm.
 
 ## Phase 3: Selection Engine & Adaptive Logic (Pending)
