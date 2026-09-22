@@ -29,13 +29,13 @@
   - Designed and implemented a deterministic Matrix Multiplication workload.
   - Implemented the algorithm in pure JavaScript.
   - Implemented the algorithm in Rust/WebAssembly.
-  - Established a frontend adapter to seamlessly initialize and execute Wasm workloads.
-  - Created rigorous Vitest unit parity tests checking multi-dimensional float arrays.
-  - Established end-to-end integration proving JS and Wasm produce identical results in a real browser.
-  - Overcame Next.js Turbopack Wasm symlink issues via tarball packaging strategy.
+  - Wasm is directly generated into `frontend/src/wasm` using `wasm-pack` and excluded from version control for clean-clone reproducibility.
+  - JS unit tests (`vitest`) and Rust tests (`cargo test`) verify their respective algorithms independently.
+  - Browser-level JS/Wasm parity is strictly verified with Playwright in a real Next.js environment.
+  - Clean-clone reproducibility has been rigorously verified.
 
-## Phase 1C: Core Implementation (Pending)
-**Status:** Not Started
+## Phase 1C: Core Implementation (In Progress)
+**Status:** In Progress
 **Goals:**
 - Implement the benchmarking engine (without logic yet).
 
