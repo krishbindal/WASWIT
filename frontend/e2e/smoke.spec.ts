@@ -11,7 +11,4 @@ test('WASWIT application loads and displays correct metadata and headings', asyn
   const heading = page.getByRole('heading', { name: 'WASWIT' });
   await expect(heading).toBeVisible();
 
-  // Verify the under-development badge is visible
-  const devBadge = page.locator('text=System currently under development');
-  await expect(devBadge).toBeVisible();
 });

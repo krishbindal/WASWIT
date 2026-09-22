@@ -5,6 +5,7 @@ import { generateDeterministicMatrix, multiplyMatricesJS } from '@/core/workload
 import { generateSortInput, mergeSortJS } from '@/core/workloads/sort';
 import { generateSha256Input, sha256JS } from '@/core/workloads/sha256';
 import { initWasm, multiplyMatricesWasm, mergeSortWasm, sha256Wasm } from '@/core/workloads/wasm';
+import { DashboardShell } from '@/components/dashboard/DashboardShell';
 
 function toHex(buffer: Uint8Array): string {
   return Array.from(buffer)
@@ -56,8 +57,8 @@ export default function Home() {
         const wasmResult2 = await multiplyMatricesWasm(a2, b2, 1);
         if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) matrixPassed = false;
 
-        try { multiplyMatricesJS(a1, b1, 2); } catch (_) {}
-        try { await multiplyMatricesWasm(a1, b1, 2); } catch (_) {}
+        try { multiplyMatricesJS(a1, b1, 2); } catch {}
+        try { await multiplyMatricesWasm(a1, b1, 2); } catch {}
         
         setParityStatus(matrixPassed ? 'PASS' : 'FAIL');
 
@@ -124,48 +125,41 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-24 font-[family-name:var(--font-geist-sans)]">
+    <main className="flex min-h-screen flex-col items-center p-8 font-[family-name:var(--font-geist-sans)]">
       <header className="mb-12 text-center">
         <h1 className="text-4xl font-bold mb-4">WASWIT</h1>
         <p className="text-xl text-gray-600">
           Workload-Aware Intelligent Selection between JavaScript and WebAssembly
         </p>
-        <div className="mt-4 inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded-md font-medium text-sm">
-          System currently under development
-        </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-        <section className="border border-gray-200 rounded-lg p-6 shadow-sm">
+      <div className="w-full max-w-6xl space-y-12">
+        <DashboardShell runs={{}} />
+
+        <section className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white">
           <h2 className="text-2xl font-semibold mb-4">Workload Parity Tests</h2>
           
-          <div className="mb-6 p-4 border rounded">
-            <h3 className="font-semibold text-lg mb-2">Matrix Multiplication (N=3)</h3>
-            <div className="mb-2 text-sm text-gray-600 font-mono break-all js-result">JS: {jsResultStr || 'Computing...'}</div>
-            <div className="mb-3 text-sm text-gray-600 font-mono break-all wasm-result">Wasm: {wasmResultStr || 'Computing...'}</div>
-            <div><strong>Parity: </strong><span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{parityStatus}</span></div>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-4 border rounded">
+              <h3 className="font-semibold text-lg mb-2">Matrix Multiplication (N=3)</h3>
+              <div className="mb-2 text-sm text-gray-600 font-mono break-all js-result">JS: {jsResultStr || 'Computing...'}</div>
+              <div className="mb-3 text-sm text-gray-600 font-mono break-all wasm-result">Wasm: {wasmResultStr || 'Computing...'}</div>
+              <div><strong>Parity: </strong><span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{parityStatus}</span></div>
+            </div>
 
-          <div className="mb-6 p-4 border rounded overflow-hidden">
-            <h3 className="font-semibold text-lg mb-2">Merge Sort (Multi-N)</h3>
-            <div className="mb-2 text-xs text-gray-600 font-mono truncate sort-js-result">JS: {sortJsResultStr || 'Computing...'}</div>
-            <div className="mb-3 text-xs text-gray-600 font-mono truncate sort-wasm-result">Wasm: {sortWasmResultStr || 'Computing...'}</div>
-            <div><strong>Parity: </strong><span className={`font-bold sort-parity-status ${sortParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sortParityStatus}</span></div>
-          </div>
+            <div className="p-4 border rounded overflow-hidden">
+              <h3 className="font-semibold text-lg mb-2">Merge Sort (Multi-N)</h3>
+              <div className="mb-2 text-xs text-gray-600 font-mono truncate sort-js-result">JS: {sortJsResultStr || 'Computing...'}</div>
+              <div className="mb-3 text-xs text-gray-600 font-mono truncate sort-wasm-result">Wasm: {sortWasmResultStr || 'Computing...'}</div>
+              <div><strong>Parity: </strong><span className={`font-bold sort-parity-status ${sortParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sortParityStatus}</span></div>
+            </div>
 
-          <div className="p-4 border rounded overflow-hidden">
-            <h3 className="font-semibold text-lg mb-2">SHA-256 Hash (Multi-N)</h3>
-            <div className="mb-2 text-xs text-gray-600 font-mono truncate sha256-js-result">JS: {sha256JsResultStr || 'Computing...'}</div>
-            <div className="mb-3 text-xs text-gray-600 font-mono truncate sha256-wasm-result">Wasm: {sha256WasmResultStr || 'Computing...'}</div>
-            <div><strong>Parity: </strong><span className={`font-bold sha256-parity-status ${sha256ParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sha256ParityStatus}</span></div>
-          </div>
-        </section>
-
-        <section className="border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h2 className="text-2xl font-semibold mb-4">Results Dashboard</h2>
-          <div className="text-gray-500 italic">
-            <p>Placeholder: Measurement results and visualization will go here.</p>
-            <p className="text-sm mt-2">(e.g., Execution Time, Throughput, Charts)</p>
+            <div className="p-4 border rounded overflow-hidden">
+              <h3 className="font-semibold text-lg mb-2">SHA-256 Hash (Multi-N)</h3>
+              <div className="mb-2 text-xs text-gray-600 font-mono truncate sha256-js-result">JS: {sha256JsResultStr || 'Computing...'}</div>
+              <div className="mb-3 text-xs text-gray-600 font-mono truncate sha256-wasm-result">Wasm: {sha256WasmResultStr || 'Computing...'}</div>
+              <div><strong>Parity: </strong><span className={`font-bold sha256-parity-status ${sha256ParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sha256ParityStatus}</span></div>
+            </div>
           </div>
         </section>
       </div>
