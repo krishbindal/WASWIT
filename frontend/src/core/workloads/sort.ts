@@ -9,8 +9,14 @@ export function generateSortInput(size: number): Int32Array {
   for (let i = 0; i < size; i++) {
     // Exact 32-bit integer LCG semantics
     seed = (Math.imul(seed, 1103515245) + 12345) | 0;
-    // Map to a range like -10000 to 10000 to include negatives and duplicates
-    arr[i] = (seed % 20000) - 10000;
+    
+    if (i > 0 && i % 7 === 0) {
+      // Deterministically duplicate previous value to guarantee exact duplicate coverage
+      arr[i] = arr[i - 1];
+    } else {
+      // Map exactly to range [-5000, 5000]
+      arr[i] = seed % 5001;
+    }
   }
   return arr;
 }

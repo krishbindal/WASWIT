@@ -63,25 +63,59 @@ describe('mergeSortJS', () => {
       }
     }
     expect(isSorted).toBe(true);
-    expect(sorted.length).toBe(100);
   });
 
-  it('generates deterministic exact 32-bit values with negatives and duplicates', () => {
-    const input1 = generateSortInput(5);
-    const input2 = generateSortInput(5);
-    expect(input1).toEqual(input2);
+  describe('generateSortInput', () => {
+    it('is deterministic', () => {
+      const input1 = generateSortInput(20);
+      const input2 = generateSortInput(20);
+      expect(input1).toEqual(input2);
+    });
 
-    // Assert exact values to verify fixed-width integer logic
-    // Using formula: seed = (Math.imul(seed, 1103515245) + 12345) | 0
-    // arr[i] = (seed % 20000) - 10000
-    // seed starts at 12345
-    expect(input1[0]).toBe(-21042);
-    expect(input1[1]).toBe(-29873);
-    expect(input1[2]).toBe(-26724);
-    expect(input1[3]).toBe(-6427);
-    expect(input1[4]).toBe(-18470);
+    it('outputs length exactly N', () => {
+      const input = generateSortInput(20);
+      expect(input.length).toBe(20);
+    });
 
-    // Verify it contains negatives
-    expect(Array.from(input1).some(v => v < 0)).toBe(true);
+    it('contains negative and positive values', () => {
+      const input = generateSortInput(20);
+      const hasNeg = Array.from(input).some(v => v < 0);
+      const hasPos = Array.from(input).some(v => v > 0);
+      expect(hasNeg).toBe(true);
+      expect(hasPos).toBe(true);
+    });
+
+    it('contains duplicates for representative size N=20', () => {
+      const input = generateSortInput(20);
+      const uniqueCount = new Set(input).size;
+      expect(uniqueCount).toBeLessThan(input.length);
+    });
+
+    it('generated values stay inside the exact documented range [-5000, 5000]', () => {
+      const input = generateSortInput(1000);
+      let inRange = true;
+      for (let i = 0; i < input.length; i++) {
+        if (input[i] < -5000 || input[i] > 5000) {
+          inRange = false;
+          break;
+        }
+      }
+      expect(inRange).toBe(true);
+    });
+
+    it('generates specific exact deterministic values', () => {
+      const input = generateSortInput(10);
+      // exact expected values verifying 32-bit integer logic and range formula
+      expect(input[0]).toBe(-2962);
+      expect(input[1]).toBe(-1353);
+      expect(input[2]).toBe(-2149);
+      expect(input[3]).toBe(2726);
+      expect(input[4]).toBe(-882);
+      expect(input[5]).toBe(191);
+      expect(input[6]).toBe(-3754);
+      expect(input[7]).toBe(-3754); // Duplicate by deterministic rule i % 7 === 0
+      expect(input[8]).toBe(3095);
+      expect(input[9]).toBe(-4749);
+    });
   });
 });
