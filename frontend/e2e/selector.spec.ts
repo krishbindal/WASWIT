@@ -5,11 +5,9 @@ test.describe('WASWIT Phase 3 Selector Engine', () => {
     // Navigate to the test fixture page
     await page.goto('/selector-test');
 
-    // Wait for the runtime selection to complete and verify it evaluates deterministically
-    const resultLocator = page.locator('#selector-result');
-    await expect(resultLocator).toHaveText('Runtime: javascript');
-
-    // The fact that it evaluated means the Analyzer, Policy Freezer, and Selector 
+    await expect(page.locator('#selector-runtime')).toHaveText('Runtime: javascript');
+    await expect(page.locator('#js-calls')).toHaveText('JS Calls: 1');
+    await expect(page.locator('#wasm-calls')).toHaveText('Wasm Calls: 0');
     // run purely in the browser without attempting hidden backend benchmarks.
   });
 });

@@ -22,12 +22,21 @@ describe('Calibrator - Derivation', () => {
   const mockStats: BenchmarkStats = { count: 1, min: 1, max: 1, mean: 1, median: 1 };
 
   function makeRecord(prefs: ('javascript'|'wasm'|'tie')[], sizes = [10, 20, 30, 40, 50, 60]): CalibrationRecord {
-    const results: CalibrationResultPoint[] = prefs.map((p, i) => ({
-      inputSize: sizes[i],
-      jsStats: mockStats,
-      wasmStats: mockStats,
-      preferredRuntime: p
-    }));
+    const results: CalibrationResultPoint[] = prefs.map((p, i) => {
+      let jsMedian = 100;
+      let wasmMedian = 100;
+      if (p === 'javascript') {
+        jsMedian = 50;
+      } else if (p === 'wasm') {
+        wasmMedian = 50;
+      }
+      return {
+        inputSize: sizes[i],
+        jsStats: { count: 1, min: jsMedian, max: jsMedian, mean: jsMedian, median: jsMedian },
+        wasmStats: { count: 1, min: wasmMedian, max: wasmMedian, mean: wasmMedian, median: wasmMedian },
+        preferredRuntime: p
+      };
+    });
     return {
       config: { workloadId: 'sha256', gridSizes: sizes.slice(0, prefs.length), warmupIterations: 1, measurementIterations: 1 },
       timestamp: '2023-01-01',
@@ -36,13 +45,56 @@ describe('Calibrator - Derivation', () => {
   }
 
   it('throws on empty calibration record', () => {
-    expect(() => deriveWorkloadPolicy({ config: { workloadId: 'matrix', gridSizes: [], warmupIterations: 1, measurementIterations: 1 }, timestamp: '', results: [] })).toThrow(/empty/);
+    expect(() => deriveWorkloadPolicy({ config: { workloadId: 'matrix', gridSizes: [], warmupIterations: 1, measurementIterations: 1 }, timestamp: '', results: [] })).toThrow(/non-empty array/);
+  });
+
+  it('throws on missing results with valid gridSizes', () => {
+    expect(() => deriveWorkloadPolicy({ config: { workloadId: 'matrix', gridSizes: [10], warmupIterations: 1, measurementIterations: 1 }, timestamp: '', results: [] })).toThrow(/Calibration record result length/);
   });
 
   it('throws on missing measurements', () => {
     const record = makeRecord(['javascript']);
     record.results[0].wasmStats = null;
     expect(() => deriveWorkloadPolicy(record)).toThrow(/Missing required/);
+  });
+
+  it('throws on contradictory preferredRuntime', () => {
+    const record = makeRecord(['javascript']);
+    // Fake the measurement to disagree with the stored preference
+    record.results[0].wasmStats!.median = 10;
+    record.results[0].jsStats!.median = 100;
+    expect(() => deriveWorkloadPolicy(record)).toThrow(/Contradictory preferredRuntime/);
+  });
+
+  it('throws if result length does not match gridSizes length', () => {
+    const record = makeRecord(['javascript', 'wasm']);
+    record.results.pop(); // Remove one result
+    expect(() => deriveWorkloadPolicy(record)).toThrow(/Calibration record result length/);
+  });
+
+  it('throws if result inputSize does not match gridSizes expected size', () => {
+    const record = makeRecord(['javascript', 'wasm']);
+    record.results[1].inputSize = 999;
+    expect(() => deriveWorkloadPolicy(record)).toThrow(/size mismatch at index 1/i);
+  });
+
+  it('is completely deterministic regardless of timestamp', () => {
+    const record1 = makeRecord(['javascript', 'javascript', 'wasm', 'wasm']);
+    record1.timestamp = '2020-01-01T00:00:00Z';
+    
+    const record2 = makeRecord(['javascript', 'javascript', 'wasm', 'wasm']);
+    record2.timestamp = '2099-12-31T23:59:59Z';
+    
+    const policy1 = deriveWorkloadPolicy(record1);
+    const policy2 = deriveWorkloadPolicy(record2);
+
+    // Timestamps in provenance will differ
+    expect(policy1.provenance.timestamp).toBe('2020-01-01T00:00:00Z');
+    expect(policy2.provenance.timestamp).toBe('2099-12-31T23:59:59Z');
+    
+    // BUT the deterministic routing logic must be perfectly identical
+    expect(policy1.rules).toEqual(policy2.rules);
+    expect(policy1.defaultRuntime).toEqual(policy2.defaultRuntime);
   });
 
   it('derives clean JS -> Wasm transition when evidence is sustained', () => {

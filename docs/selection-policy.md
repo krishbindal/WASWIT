@@ -25,7 +25,10 @@ interface SelectionPolicy {
 Each `WorkloadPolicy` contains ordered rules mapping a `maxInputSize` to a preferred `RuntimeType`, a fallback `defaultRuntime`, and the `provenance` metadata.
 
 ## Derivation Rule: median-crossover-consistent-v2
-A single noisy flip is insufficient to declare a state change. The active rule explicitly requires that runtime performance evidence must persist consecutively across at least two calibration points before a new transition boundary is declared. Empty calibration grids fail completely rather than establishing empirical fallbacks.
+The source of runtime preference is exclusively the explicitly measured `jsStats.median` and `wasmStats.median`. Historical or convenience fields like `preferredRuntime` cannot override measured statistics.
+A single noisy flip is insufficient to declare a state change. The active rule explicitly requires that runtime performance evidence must persist consecutively across at least two calibration points before a new transition boundary is declared. 
+
+Invalid or incomplete calibration records explicitly fail. Complete calibration coverage (results matching every configured grid size perfectly) is rigorously required. Deterministic derivation depends solely on deterministic calibration evidence; while wall-clock `timestamp` is preserved as provenance metadata, it is not a policy decision input.
 
 ## Calibration Provenance
 Because WebAssembly instantiation overhead and boundary costs are browser-specific, policies must maintain clear provenance. 

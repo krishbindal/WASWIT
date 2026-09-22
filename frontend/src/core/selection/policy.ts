@@ -69,6 +69,10 @@ export function freezePolicy(policy: SelectionPolicy): FrozenSelectionPolicy {
     });
   }
 
+  // TypeScript's native Object.freeze signature returns Readonly<T>, which is shallow. 
+  // To enforce deep immutability at compile time, we cast to our custom FrozenSelectionPolicy 
+  // (a DeepReadonly wrapper). The manual Object.freeze calls above ensure the object is 
+  // actually deeply frozen at runtime. This cast is minimal and isolated.
   return Object.freeze({
     version: policy.version,
     derivationRule: policy.derivationRule,

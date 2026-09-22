@@ -2,6 +2,7 @@ import { CalibrationConfig, CalibrationRecord, CalibrationResultPoint } from './
 import { WorkloadPolicy, SelectionRule } from '../selection/types';
 import { RuntimeType } from '../types';
 import { runBenchmark } from '../benchmark/engine';
+import { BenchmarkStats } from '../benchmark/types';
 
 export type BenchmarkRunner = (inputSize: number, runtime: RuntimeType) => Promise<unknown> | unknown;
 
@@ -123,6 +124,45 @@ export async function runCalibrationSweep(
 }
 
 /**
+ * Derives the preferred runtime purely based on deterministic measurements.
+ * JS median < Wasm median -> javascript
+ * Wasm median < JS median -> wasm
+ * Equal -> tie
+ */
+export function derivePreferredRuntime(jsStats: BenchmarkStats, wasmStats: BenchmarkStats): RuntimeType | 'tie' {
+  if (jsStats.median < wasmStats.median) {
+    return 'javascript';
+  } else if (wasmStats.median < jsStats.median) {
+    return 'wasm';
+  }
+  return 'tie';
+}
+
+/**
+ * Strictly validates that a CalibrationRecord is completely consistent with its configuration.
+ */
+export function validateCalibrationRecord(record: CalibrationRecord): void {
+  validateCalibrationConfig(record.config);
+
+  if (record.results.length !== record.config.gridSizes.length) {
+    throw new Error(`Calibration record result length (${record.results.length}) does not match gridSizes length (${record.config.gridSizes.length})`);
+  }
+
+  for (let i = 0; i < record.results.length; i++) {
+    const pt = record.results[i];
+    const expectedSize = record.config.gridSizes[i];
+
+    if (pt.inputSize !== expectedSize) {
+      throw new Error(`Calibration record size mismatch at index ${i}. Expected ${expectedSize}, got ${pt.inputSize}`);
+    }
+
+    if (!pt.jsStats || !pt.wasmStats) {
+      throw new Error(`Missing required JS or Wasm measurements for size ${pt.inputSize}`);
+    }
+  }
+}
+
+/**
  * Derives a deterministic WorkloadPolicy from a completed CalibrationRecord.
  * Uses the 'median-crossover-consistent-v2' rule, which requires evidence of a new runtime
  * to be sustained across at least two consecutive points before creating a transition boundary.
@@ -130,16 +170,16 @@ export async function runCalibrationSweep(
  * Empty calibrations or calibrations failing to establish a base state explicitly throw errors.
  */
 export function deriveWorkloadPolicy(record: CalibrationRecord): WorkloadPolicy {
-  if (record.results.length === 0) {
-    throw new Error('Cannot derive policy from empty calibration record.');
-  }
+  validateCalibrationRecord(record);
 
   // Determine absolute preferences per point
   const prefs = record.results.map(pt => {
-    if (!pt.jsStats || !pt.wasmStats) {
-      throw new Error(`Missing required JS or Wasm measurements for size ${pt.inputSize}`);
+    // validateCalibrationRecord already checks existence of stats, we can safely non-null assert
+    const measuredPref = derivePreferredRuntime(pt.jsStats!, pt.wasmStats!);
+    if (measuredPref !== pt.preferredRuntime) {
+      throw new Error(`Contradictory preferredRuntime for size ${pt.inputSize}. Stored: ${pt.preferredRuntime}, Measured: ${measuredPref}`);
     }
-    return pt.preferredRuntime;
+    return measuredPref;
   });
 
   const firstPref = prefs[0];
