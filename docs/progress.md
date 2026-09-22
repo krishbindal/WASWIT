@@ -9,11 +9,21 @@
 - Updated literature review and prior art with proper academic citations.
 - Redefined the research gap as a proposed approach rather than a proven novelty.
 
-## Phase 1: Environment Setup & Core Implementation (Pending)
+### Phase 1A: Environment Setup & Project Scaffold
+**Status:** Completed & Verified
+
+- **Goal:** Set up a clean, working development environment and scaffold the Next.js and Rust architecture.
+- **Key Deliverables:**
+  - Initialized Next.js application (App Router, React 19, TypeScript, Tailwind CSS).
+  - Configured Vitest and Playwright for unit and end-to-end testing (Smoke tests passing).
+  - Established initial module boundaries (`analyzer`, `selector`, `benchmark`, `types`).
+  - Scaffolded the Rust/WebAssembly workspace (`wasm/`).
+  - Successfully verified toolchains (Node, npm, Rustc, Cargo, Wasm-pack).
+  - Verified WebAssembly compilation target.
+
+## Phase 1: Core Implementation (Pending)
 **Status:** Not Started
 **Goals:**
-- Initialize Next.js project.
-- Initialize Rust WebAssembly project.
 - Implement the benchmarking engine (without logic yet).
 
 ## Phase 2: Workload Implementation (Pending)

@@ -14,6 +14,10 @@ This document serves as an architectural decision record (ADR) for the WASWIT pr
 **Decision:** Use deterministic, empirically calibrated thresholds rather than an ML model to select the runtime.
 **Rationale:** WASWIT does not use AI or ML. Loading and running an ML model in the browser introduces massive overhead of its own, likely defeating the purpose of micro-optimizing the JS/Wasm decision. A deterministic lookup rule based on input size is faster, more transparent, and highly predictable.
 
+## 4. WebAssembly Build Reproducibility
+**Decision:** Commit `wasm/Cargo.lock` to source control.
+**Rationale:** Although `wasm-pack` creates a package that is later integrated into the frontend workspace, committing `Cargo.lock` ensures that anyone building the Wasm module locally (using `wasm-pack build`) receives identical dependency versions, providing reproducible benchmark environments.
+
 ## Unresolved Decisions
 - **Web Workers:** Should benchmarks run on the main thread (risking UI freezes) or in a Web Worker (introducing messaging overhead)? This will be evaluated via pilot experiments during implementation.
 - **Shared Memory (SharedArrayBuffer):** Should we use shared memory to minimize JS↔Wasm copying overhead? This requires specific HTTP headers (Cross-Origin Isolation), which may complicate the static web deployment. Pending pilot evaluation.
