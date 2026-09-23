@@ -6,7 +6,7 @@
 - **Min/Max Execution Time (ms):** Tracks the best and worst-case boundaries for variability analysis.
 
 ## 2. Timing Accuracy
-- All execution durations are captured using `performance.now()`, ensuring sub-millisecond precision.
+- All execution durations are captured using `performance.now()`. Note that actual timer precision is subject to browser-level side-channel mitigations (e.g. timers are typically coarsened to 1ms-2ms resolution).
 - Timings strictly wrap the deterministic algorithmic execution. Data generation/preparation is specifically excluded from the timing window.
 
 ## 3. Warm-up Methodology

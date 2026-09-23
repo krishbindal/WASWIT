@@ -62,8 +62,7 @@ describe('Evaluation Engine', () => {
       workloadId: 'sort',
       evaluationGridSizes: [100],
       warmupIterations: 1,
-      measurementIterations: 2,
-      generationParams: { matrixOffset: 0 }
+      measurementIterations: 2
     };
 
     const policy: SelectionPolicy = {
@@ -85,13 +84,22 @@ describe('Evaluation Engine', () => {
     };
 
     const snapshot = JSON.stringify(policy);
+    
+    // Simulate a strictly frozen input (Phase 3's output)
+    Object.freeze(policy);
+    Object.freeze(policy.workloads);
+    Object.freeze(policy.workloads.sort!);
+    Object.freeze(policy.workloads.sort!.rules);
+    Object.freeze(policy.workloads.sort!.provenance);
+    Object.freeze(policy.workloads.sort!.provenance.gridSizes);
+
     const iterator = runEvaluation(config, policy, 'eval-id-123');
     for await (const _ of iterator) {}
 
     // Verify structural immutability
     expect(JSON.stringify(policy)).toBe(snapshot);
     
-    // Mutation attempts on frozen policy should fail
+    // Test that JS engine respects the freeze (not testing runEvaluation here, just proving the test policy is rigid)
     expect(() => {
       (policy as any).version = 'hacked';
     }).toThrow();
@@ -106,8 +114,7 @@ describe('Evaluation Engine', () => {
       workloadId: 'sort',
       evaluationGridSizes: [100],
       warmupIterations: 1,
-      measurementIterations: 2,
-      generationParams: { matrixOffset: 0 }
+      measurementIterations: 2
     };
 
     const policy: SelectionPolicy = {
@@ -158,5 +165,66 @@ describe('Evaluation Engine', () => {
     expect(evalCase.jsSummary).toBeDefined();
     expect(evalCase.wasmSummary).toBeDefined();
     expect(evalCase.adaptiveSummary).toBeDefined();
+  });
+
+  it('preserves partial failures and produces CompletedWithFailures', async () => {
+    const config: EvaluationConfig = {
+      workloadId: 'sort',
+      evaluationGridSizes: [100],
+      warmupIterations: 0,
+      measurementIterations: 2,
+    };
+
+    const policy: SelectionPolicy = {
+      version: '1.0.0',
+      derivationRule: 'test-rule',
+      workloads: {
+        sort: {
+          workloadId: 'sort',
+          defaultRuntime: 'javascript',
+          rules: [],
+          provenance: {
+            gridSizes: [50, 500],
+            warmupIterations: 1,
+            measurementIterations: 2,
+            timestamp: '2026-09-23T00:00:00Z'
+          }
+        }
+      }
+    };
+
+    // Inject a runner that fails on the second JS measurement
+    let jsCallCount = 0;
+    const failingRunner = async (size: number, runtime: string, executionMode: string) => {
+      if (executionMode === 'javascript') {
+        jsCallCount++;
+        if (jsCallCount === 2) {
+          throw new Error('Simulated runner failure');
+        }
+      }
+      return new Int32Array();
+    };
+
+    const iterator = runEvaluation(config, policy, 'eval-fail-test', failingRunner as any);
+    const results = [];
+    for await (const res of iterator) {
+      results.push(res);
+    }
+    
+    const finalRun = results[results.length - 1];
+    expect(finalRun.status).toBe('CompletedWithFailures');
+    
+    const evalCase = finalRun.cases[0];
+    
+    // The first JS trial succeeds
+    expect(evalCase.jsTrials[0].error).toBeUndefined();
+    expect(evalCase.jsTrials[0].elapsedMs).toBeDefined();
+    
+    // The second JS trial fails
+    expect(evalCase.jsTrials[1].error).toBe('Error: Simulated runner failure');
+    expect(evalCase.jsTrials[1].elapsedMs).toBeUndefined();
+    
+    // Summary still works (calculates over the 1 successful trial)
+    expect(evalCase.jsSummary?.count).toBe(1);
   });
 });

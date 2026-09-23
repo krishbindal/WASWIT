@@ -12,6 +12,7 @@ Unit tests operate in a simulated Node.js/JSDOM environment.
   - Direct execution mock validations confirming the exact single-path invocation of Adaptive dispatch without conflating global calls.
   - Independent JS algorithms ensuring baseline deterministic output.
   - Statistics module checking for mathematical invariants.
+  - Partial failure handling producing `CompletedWithFailures`.
 
 ## 2. WebAssembly Core Testing (Cargo Test)
 Rust unit tests compiled natively (not Wasm).
@@ -25,6 +26,7 @@ Integration tests running in a real headless browser.
   - `parity.spec.ts`: Executes across all workload types across sample bounds.
   - `selector.spec.ts`: End-to-end validation of the runtime selector routing against an immutable fixture.
   - `dashboard.spec.ts`: Validates that empty state UI elements render and function as expected before experimental data collection begins.
+  - `evaluation.spec.ts`: End-to-end Phase 4B evaluation runs across all three workloads proving UI orchestration and data export.
 
 ## 4. Continuous Integration / Static Auditing (CLI Pipeline)
 Scripts enforce architectural integrity directly via Git checks.

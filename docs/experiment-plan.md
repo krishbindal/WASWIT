@@ -32,9 +32,9 @@ The goal of this phase is to test the frozen WASWIT engine against the static ba
 4. **Adaptive Constraints:** The adaptive branch (Mode C) dynamically executes *exactly one* selected runtime based solely on the frozen policy.
 
 ## 4. Analysis and Handling of Results
-- **Summary Statistics:** We use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean** to report variability. Warm-up trials and explicitly errored trials are strictly excluded from summaries.
+- **Summary Statistics:** We use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean** as a secondary central tendency metric. Warm-up trials and explicitly errored trials are strictly excluded from summaries.
 - **Partial Failures:** Runs containing failed trials yield a `CompletedWithFailures` status. Elapsed times are not fabricated.
-- **Environment Recording:** Every test run strictly logs browser versions, OS, and hardware specifications.
+- **Environment Recording:** Every test run logs browser versions, OS, and hardware specifications (e.g. `hardwareConcurrency` and `deviceMemory`). Note that browser-exposed metadata is often heavily clamped or mocked due to anti-fingerprinting privacy protections and cannot be trusted as an absolute ground-truth reflection of the host hardware.
 - **Raw Data Preservation:** All raw JSON timing data is saved to ensure reproducibility and transparency.
 
 *Note: Phase 4B validates the evaluation framework and integrity rules. Final performance conclusions are reserved for Phase 5 data collection.*

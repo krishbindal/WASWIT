@@ -42,10 +42,16 @@ export interface EvaluationSummaryStats {
   median: number;
 }
 
+export interface GenerationSpec {
+  generatorId: string;
+  parameters?: Record<string, number | string | boolean>;
+}
+
 export interface EvaluationCase {
   evaluationCaseId: string;
   workloadId: WorkloadId;
   inputSize: number;
+  generationSpec: GenerationSpec;
   
   /** Raw trial observations preserved explicitly */
   jsTrials: EvaluationTrial[];

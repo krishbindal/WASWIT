@@ -35,7 +35,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
       evaluationGridSizes: defaultGrids[workloadId],
       warmupIterations: 3,
       measurementIterations: 10,
-      generationParams: { matrixOffset: 42 } 
+      ...(workloadId === 'matrix' ? { generationParams: { matrixOffset: 42 } } : {})
     };
 
     try {
@@ -48,7 +48,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
       if (finalRun) {
         onEvaluationComplete(finalRun);
         setCompletedRun(finalRun);
-        setStatus('Completed');
+        setStatus(finalRun.status); // Use finalRun.status directly
       }
     } catch (err) {
       setError(String(err));
@@ -74,7 +74,8 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           status === 'Idle' ? 'bg-gray-100 text-gray-800' :
           status === 'Running' || status === 'Preparing' ? 'bg-blue-100 text-blue-800 animate-pulse' :
-          (status === 'Completed' || status === 'CompletedWithFailures') ? 'bg-green-100 text-green-800' :
+          status === 'Completed' ? 'bg-green-100 text-green-800' :
+          status === 'CompletedWithFailures' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
           'bg-red-100 text-red-800'
         }`}>
           {status}

@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { runEvaluation } from './engine';
-import { EvaluationConfig } from './types';
+import { EvaluationConfig, ExecutionMode } from './types';
 import { FrozenSelectionPolicy } from '../selection/types';
 
 describe('Evaluation Engine - Execution Path Verification', () => {
@@ -35,28 +35,16 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       }
     };
 
-    const mockRunner = vi.fn(async (size: number, runtime: string) => new Float32Array());
+    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => new Float32Array());
 
-    const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner);
-    const results = [];
-    for await (const res of iterator) {
-      results.push(res);
-    }
-    const finalRun = results[results.length - 1];
-    
-    // Evaluate the trials produced in Mode C (adaptive)
-    const adaptiveTrial = finalRun.cases[0].adaptiveTrials[0];
-    expect(adaptiveTrial.selectedRuntime).toBe('javascript');
+    const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner as any);
+    for await (const res of iterator) {}
 
-    // Filter mock calls that occurred exactly for Mode C
-    // Since Mode A (JS) runs first, Mode B (Wasm) runs second, Mode C (Adaptive) runs third
-    // The sequence for 1 iteration is: 
-    // call 1: (100, 'javascript') [Mode A]
-    // call 2: (100, 'wasm') [Mode B]
-    // call 3: (100, 'javascript') [Mode C]
-    
-    expect(mockRunner.mock.calls[2]).toEqual([100, 'javascript']);
-    expect(mockRunner).toHaveBeenCalledTimes(3);
+    // Filter mock calls to strictly analyze the adaptive branch invocation independently
+    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
+
+    expect(adaptiveCalls.length).toBe(1);
+    expect(adaptiveCalls[0][1]).toBe('javascript');
   });
 
   it('proves single-path dispatch for adaptive execution (wasm)', async () => {
@@ -86,24 +74,14 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       }
     };
 
-    const mockRunner = vi.fn(async (size: number, runtime: string) => new Float32Array());
+    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => new Float32Array());
 
-    const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner);
-    const results = [];
-    for await (const res of iterator) {
-      results.push(res);
-    }
-    const finalRun = results[results.length - 1];
-    
-    const adaptiveTrial = finalRun.cases[0].adaptiveTrials[0];
-    expect(adaptiveTrial.selectedRuntime).toBe('wasm');
+    const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner as any);
+    for await (const res of iterator) {}
 
-    // The sequence for 1 iteration is: 
-    // call 1: (300, 'javascript') [Mode A]
-    // call 2: (300, 'wasm') [Mode B]
-    // call 3: (300, 'wasm') [Mode C]
-    
-    expect(mockRunner.mock.calls[2]).toEqual([300, 'wasm']);
-    expect(mockRunner).toHaveBeenCalledTimes(3);
+    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
+
+    expect(adaptiveCalls.length).toBe(1);
+    expect(adaptiveCalls[0][1]).toBe('wasm');
   });
 });

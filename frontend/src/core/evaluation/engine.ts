@@ -6,7 +6,9 @@ import {
   EvaluationTrial, 
   EvaluationCase, 
   EvaluationRun,
-  EvaluationSummaryStats 
+  EvaluationSummaryStats,
+  ExecutionMode,
+  GenerationSpec
 } from './types';
 
 import { generateDeterministicMatrix, multiplyMatricesJS } from '../workloads/matrix';
@@ -33,13 +35,14 @@ export function validateEvaluationConfig(config: EvaluationConfig, policy: Froze
   
   for (let i = 0; i < config.evaluationGridSizes.length; i++) {
     const size = config.evaluationGridSizes[i];
-    if (size < 0 || !Number.isInteger(size) || !Number.isFinite(size)) throw new Error('Invalid grid size');
+    if (size <= 0 || !Number.isInteger(size) || !Number.isFinite(size)) throw new Error('Grid value must be a valid integer greater than 0');
     if (i > 0 && size <= config.evaluationGridSizes[i-1]) throw new Error('Grid must be strictly ascending with no duplicates');
     if (calibGrid.includes(size)) throw new Error(`Grid overlap with calibration: ${size}`);
   }
 
   if (config.generationParams) {
     if (config.generationParams.matrixOffset !== undefined) {
+      if (config.workloadId !== 'matrix') throw new Error('matrixOffset is not supported for this workload');
       if (!Number.isFinite(config.generationParams.matrixOffset) || !Number.isInteger(config.generationParams.matrixOffset)) {
         throw new Error('Invalid generationParams.matrixOffset');
       }
@@ -107,18 +110,8 @@ export async function* runEvaluation(
   config: EvaluationConfig,
   policy: FrozenSelectionPolicy,
   experimentRunId: string,
-  _testRunner?: (size: number, runtime: RuntimeType) => Promise<any>
+  _testRunner?: (size: number, runtime: RuntimeType, executionMode: ExecutionMode) => Promise<any>
 ): AsyncGenerator<EvaluationRun, EvaluationRun, void> {
-  // Deep freeze the policy to ensure strict immutability during execution
-  Object.freeze(policy);
-  Object.freeze(policy.workloads);
-  if (policy.workloads[config.workloadId]) {
-    Object.freeze(policy.workloads[config.workloadId]);
-    Object.freeze(policy.workloads[config.workloadId]!.rules);
-    Object.freeze(policy.workloads[config.workloadId]!.provenance);
-    Object.freeze(policy.workloads[config.workloadId]!.provenance.gridSizes);
-  }
-
   validateEvaluationConfig(config, policy);
 
   const run: EvaluationRun = {
@@ -154,15 +147,22 @@ export async function* runEvaluation(
 
   for (const size of config.evaluationGridSizes) {
     let caseId = `${config.workloadId}-sz${size}`;
+    let generationSpec: GenerationSpec;
     if (config.workloadId === 'matrix') {
        const offset = config.generationParams?.matrixOffset ?? 0;
        caseId += `-off${offset}`;
+       generationSpec = { generatorId: 'deterministic-matrix-v1', parameters: { offset } };
+    } else if (config.workloadId === 'sort') {
+       generationSpec = { generatorId: 'deterministic-sort-v1', parameters: {} };
+    } else {
+       generationSpec = { generatorId: 'deterministic-sha256-v1', parameters: {} };
     }
 
     const evalCase: EvaluationCase = {
       evaluationCaseId: caseId,
       workloadId: config.workloadId,
       inputSize: size,
+      generationSpec,
       jsTrials: [],
       wasmTrials: [],
       adaptiveTrials: [],
@@ -178,7 +178,7 @@ export async function* runEvaluation(
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
-        await runner(size, 'javascript');
+        await runner(size, 'javascript', 'javascript');
         const end = performance.now();
         
         evalCase.jsTrials.push({
@@ -207,7 +207,7 @@ export async function* runEvaluation(
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
-        await runner(size, 'wasm');
+        await runner(size, 'wasm', 'wasm');
         const end = performance.now();
         
         evalCase.wasmTrials.push({
@@ -244,7 +244,8 @@ export async function* runEvaluation(
         const selectionOverheadMs = sEnd - sStart;
 
         const eStart = performance.now();
-        await runner(size, selectedRuntime);
+        if (!selectedRuntime) throw new Error('Selector failed');
+        await runner(size, selectedRuntime, 'adaptive');
         const eEnd = performance.now();
 
         evalCase.adaptiveTrials.push({
