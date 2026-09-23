@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { DashboardShell } from '@/components/dashboard/DashboardShell';
-import { mockPolicyFixture } from '@/core/fixtures/policy';
+import { uiPolicyFixture } from '@/core/fixtures/policy';
 import { generateDeterministicMatrix, multiplyMatricesJS } from '@/core/workloads/matrix';
 import { generateSortInput, mergeSortJS } from '@/core/workloads/sort';
 import { generateSha256Input, sha256JS } from '@/core/workloads/sha256';
@@ -135,7 +135,7 @@ export default function Home() {
       </header>
 
       <div className="w-full max-w-6xl space-y-12">
-        <DashboardShell runs={{}} frozenPolicy={mockPolicyFixture} />
+        <DashboardShell runs={{}} frozenPolicy={uiPolicyFixture} />
 
         <section className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white">
           <h2 className="text-2xl font-semibold mb-4">Workload Parity Tests</h2>

@@ -27,12 +27,12 @@ vi.mock('../workloads/wasm', () => ({
 describe('Evaluation Engine', () => {
   it('calculates summary correctly excluding warmups and errors', () => {
     const trials: EvaluationTrial[] = [
-      { trialIndex: 0, phase: 'cold', isWarmup: true, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 10, timestamp: '' },
-      { trialIndex: 1, phase: 'warm', isWarmup: true, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 5, timestamp: '' },
-      { trialIndex: 2, phase: 'warm', isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 6, timestamp: '' },
-      { trialIndex: 3, phase: 'warm', isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 4, timestamp: '' },
-      { trialIndex: 4, phase: 'warm', isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 5, timestamp: '' },
-      { trialIndex: 5, phase: 'warm', isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 0, error: 'fail', timestamp: '' }
+      { trialIndex: 0, isWarmup: true, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 10, timestamp: '' },
+      { trialIndex: 1, isWarmup: true, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 5, timestamp: '' },
+      { trialIndex: 2, isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 6, timestamp: '' },
+      { trialIndex: 3, isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 4, timestamp: '' },
+      { trialIndex: 4, isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 5, timestamp: '' },
+      { trialIndex: 5, isWarmup: false, executionMode: 'javascript', selectedRuntime: 'javascript', elapsedMs: 0, error: 'fail', timestamp: '' }
     ];
 
     const summary = calculateSummary(trials);
@@ -44,13 +44,70 @@ describe('Evaluation Engine', () => {
     expect(summary?.median).toBe(5);
   });
 
+  it('calculateSummary strictly rejects invalid elapsedMs', () => {
+    const makeTrial = (elapsedMs?: number): EvaluationTrial => ({
+      trialIndex: 0, isWarmup: false, executionMode: 'javascript', elapsedMs, timestamp: ''
+    });
+
+    expect(() => calculateSummary([makeTrial(NaN)])).toThrow('Invalid elapsedMs');
+    expect(() => calculateSummary([makeTrial(Infinity)])).toThrow('Invalid elapsedMs');
+    expect(() => calculateSummary([makeTrial(-1)])).toThrow('Invalid elapsedMs');
+    
+    // undefined should simply be ignored as not having elapsedMs, so it returns null
+    expect(calculateSummary([{ trialIndex: 0, isWarmup: false, executionMode: 'javascript', error: 'e', timestamp: '' }])).toBeNull();
+  });
+
+  it('runs evaluation loop without mutating policy', async () => {
+    const config: EvaluationConfig = {
+      workloadId: 'sort',
+      evaluationGridSizes: [100],
+      warmupIterations: 1,
+      measurementIterations: 2,
+      generationParams: { matrixOffset: 0 }
+    };
+
+    const policy: SelectionPolicy = {
+      version: '1.0.0',
+      derivationRule: 'test-rule',
+      workloads: {
+        sort: {
+          workloadId: 'sort',
+          defaultRuntime: 'javascript',
+          rules: [{ maxInputSize: 50, runtime: 'javascript' }, { maxInputSize: 500, runtime: 'wasm' }],
+          provenance: {
+            gridSizes: [50, 500],
+            warmupIterations: 1,
+            measurementIterations: 2,
+            timestamp: '2026-09-23T00:00:00Z'
+          }
+        }
+      }
+    };
+
+    const snapshot = JSON.stringify(policy);
+    const iterator = runEvaluation(config, policy, 'eval-id-123');
+    for await (const _ of iterator) {}
+
+    // Verify structural immutability
+    expect(JSON.stringify(policy)).toBe(snapshot);
+    
+    // Mutation attempts on frozen policy should fail
+    expect(() => {
+      (policy as any).version = 'hacked';
+    }).toThrow();
+    
+    expect(() => {
+      (policy.workloads.sort!.rules as any).push({ maxInputSize: 9999, runtime: 'wasm' });
+    }).toThrow();
+  });
+
   it('runs evaluation loop properly yielding progress', async () => {
     const config: EvaluationConfig = {
       workloadId: 'sort',
       evaluationGridSizes: [100],
       warmupIterations: 1,
       measurementIterations: 2,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
 
     const policy: SelectionPolicy = {

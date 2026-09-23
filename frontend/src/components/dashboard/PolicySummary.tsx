@@ -17,7 +17,7 @@ export function PolicySummary({
 
   return (
     <div className="p-4 border rounded bg-white shadow-sm space-y-2">
-      <h3 className="font-semibold text-lg border-b pb-2">Frozen Selection Policy</h3>
+      <h3 className="font-semibold text-lg border-b pb-2">Evaluation Test Policy Loaded</h3>
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-gray-500 block">Policy Version</span>

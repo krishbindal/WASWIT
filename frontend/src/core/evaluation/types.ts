@@ -9,15 +9,19 @@ export interface EvaluationConfig {
   evaluationGridSizes: number[];
   warmupIterations: number;
   measurementIterations: number;
-  /** Explicit deterministic offset/seed if applicable to the workload for generating evaluation cases */
-  generationOffset: number;
+  /** 
+   * Explicit deterministic generation parameters.
+   * Sort and SHA256 have purely size-based deterministic generation and use no parameters.
+   * Matrix uses an explicit offset parameter.
+   */
+  generationParams?: {
+    matrixOffset?: number;
+  };
 }
 
 export interface EvaluationTrial {
   trialIndex: number;
-  /** 'cold' indicates the first execution of a runtime in a case, including initialization. 'warm' indicates subsequent runs. */
-  phase: 'cold' | 'warm';
-  /** True if this trial was executed during the warmup phase (should typically be excluded from summaries) */
+  /** True if this trial was executed during the warmup phase (should be excluded from summaries) */
   isWarmup: boolean;
   executionMode: ExecutionMode;
   /** The actual runtime executed. For Mode A/B it is fixed; for Mode C it is chosen by the selector. Undefined if selector failed. */
@@ -48,7 +52,7 @@ export interface EvaluationCase {
   wasmTrials: EvaluationTrial[];
   adaptiveTrials: EvaluationTrial[];
 
-  /** Derived summary statistics across warm runs (cold excluded from summary to avoid skew) */
+  /** Derived summary statistics across warm measurements */
   jsSummary: EvaluationSummaryStats | null;
   wasmSummary: EvaluationSummaryStats | null;
   adaptiveSummary: EvaluationSummaryStats | null;
@@ -63,6 +67,6 @@ export interface EvaluationRun {
   calibrationTimestamp: string | null;
   
   cases: EvaluationCase[];
-  status: 'Idle' | 'Preparing' | 'Running' | 'Completed' | 'Failed';
+  status: 'Idle' | 'Preparing' | 'Running' | 'Completed' | 'CompletedWithFailures' | 'Failed';
   error?: string;
 }

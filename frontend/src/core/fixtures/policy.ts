@@ -1,8 +1,9 @@
-import { FrozenSelectionPolicy } from '../selection/types';
+import { SelectionPolicy, FrozenSelectionPolicy } from '../selection/types';
+import { freezePolicy } from '../selection/policy';
 
-export const mockPolicyFixture: FrozenSelectionPolicy = {
+const rawPolicy: SelectionPolicy = {
   version: '1.0.0-fixture',
-  derivationRule: 'median-crossover-consistent-v2',
+  derivationRule: 'test-fixture-derivation',
   workloads: {
     matrix: {
       workloadId: 'matrix',
@@ -54,3 +55,5 @@ export const mockPolicyFixture: FrozenSelectionPolicy = {
     }
   }
 };
+
+export const uiPolicyFixture: FrozenSelectionPolicy = freezePolicy(rawPolicy);

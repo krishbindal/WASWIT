@@ -25,19 +25,31 @@ export function validateEvaluationConfig(config: EvaluationConfig, policy: Froze
   if (config.measurementIterations <= 0 || !Number.isInteger(config.measurementIterations)) throw new Error('Invalid measurementIterations');
   if (!config.evaluationGridSizes || config.evaluationGridSizes.length === 0) throw new Error('Grid must be non-empty');
   
+  if (!policy || !policy.workloads[config.workloadId]) {
+    throw new Error(`Missing workload policy for ${config.workloadId}`);
+  }
+
   const calibGrid = policy.workloads[config.workloadId]?.provenance.gridSizes || [];
   
   for (let i = 0; i < config.evaluationGridSizes.length; i++) {
     const size = config.evaluationGridSizes[i];
-    if (size < 0 || !Number.isInteger(size)) throw new Error('Invalid grid size');
+    if (size < 0 || !Number.isInteger(size) || !Number.isFinite(size)) throw new Error('Invalid grid size');
     if (i > 0 && size <= config.evaluationGridSizes[i-1]) throw new Error('Grid must be strictly ascending with no duplicates');
     if (calibGrid.includes(size)) throw new Error(`Grid overlap with calibration: ${size}`);
+  }
+
+  if (config.generationParams) {
+    if (config.generationParams.matrixOffset !== undefined) {
+      if (!Number.isFinite(config.generationParams.matrixOffset) || !Number.isInteger(config.generationParams.matrixOffset)) {
+        throw new Error('Invalid generationParams.matrixOffset');
+      }
+    }
   }
 }
 
 export function calculateSummary(trials: EvaluationTrial[]): EvaluationSummaryStats | null {
-  // Only summarize warm trials that were NOT part of the warmup phase and didn't error
-  const measurementTrials = trials.filter(t => t.phase === 'warm' && !t.isWarmup && !t.error && typeof t.elapsedMs === 'number');
+  // Only summarize warm trials that didn't error and have valid timing
+  const measurementTrials = trials.filter(t => !t.isWarmup && !t.error && typeof t.elapsedMs === 'number');
   if (measurementTrials.length === 0) return null;
 
   const times = measurementTrials.map(t => {
@@ -64,8 +76,9 @@ export function calculateSummary(trials: EvaluationTrial[]): EvaluationSummarySt
 function getWorkloadRunner(workloadId: WorkloadId, config: EvaluationConfig) {
   return async (size: number, runtime: RuntimeType) => {
     if (workloadId === 'matrix') {
-      const a = generateDeterministicMatrix(size, config.generationOffset);
-      const b = generateDeterministicMatrix(size, config.generationOffset + 1);
+      const offset = config.generationParams?.matrixOffset ?? 0;
+      const a = generateDeterministicMatrix(size, offset);
+      const b = generateDeterministicMatrix(size, offset + 1);
       if (runtime === 'javascript') {
         return multiplyMatricesJS(a, b, size);
       } else {
@@ -93,8 +106,19 @@ function getWorkloadRunner(workloadId: WorkloadId, config: EvaluationConfig) {
 export async function* runEvaluation(
   config: EvaluationConfig,
   policy: FrozenSelectionPolicy,
-  experimentRunId: string
+  experimentRunId: string,
+  _testRunner?: (size: number, runtime: RuntimeType) => Promise<any>
 ): AsyncGenerator<EvaluationRun, EvaluationRun, void> {
+  // Deep freeze the policy to ensure strict immutability during execution
+  Object.freeze(policy);
+  Object.freeze(policy.workloads);
+  if (policy.workloads[config.workloadId]) {
+    Object.freeze(policy.workloads[config.workloadId]);
+    Object.freeze(policy.workloads[config.workloadId]!.rules);
+    Object.freeze(policy.workloads[config.workloadId]!.provenance);
+    Object.freeze(policy.workloads[config.workloadId]!.provenance.gridSizes);
+  }
+
   validateEvaluationConfig(config, policy);
 
   const run: EvaluationRun = {
@@ -125,12 +149,18 @@ export async function* runEvaluation(
   run.status = 'Running';
   yield { ...run };
 
-  const runner = getWorkloadRunner(config.workloadId, config);
+  const runner = _testRunner || getWorkloadRunner(config.workloadId, config);
+  let hasFailures = false;
 
   for (const size of config.evaluationGridSizes) {
-    // Deterministic evaluation case ID based on generation parameters
+    let caseId = `${config.workloadId}-sz${size}`;
+    if (config.workloadId === 'matrix') {
+       const offset = config.generationParams?.matrixOffset ?? 0;
+       caseId += `-off${offset}`;
+    }
+
     const evalCase: EvaluationCase = {
-      evaluationCaseId: `${config.workloadId}-sz${size}-off${config.generationOffset}`,
+      evaluationCaseId: caseId,
       workloadId: config.workloadId,
       inputSize: size,
       jsTrials: [],
@@ -145,8 +175,6 @@ export async function* runEvaluation(
 
     // --- Mode A: JS Only ---
     for (let i = 0; i < totalIterations; i++) {
-      const isCold = (i === 0);
-      const phase = isCold ? 'cold' : 'warm';
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
@@ -155,7 +183,6 @@ export async function* runEvaluation(
         
         evalCase.jsTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'javascript',
           selectedRuntime: 'javascript',
@@ -163,9 +190,9 @@ export async function* runEvaluation(
           timestamp: new Date().toISOString()
         });
       } catch (err) {
+        hasFailures = true;
         evalCase.jsTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'javascript',
           selectedRuntime: 'javascript',
@@ -177,8 +204,6 @@ export async function* runEvaluation(
     
     // --- Mode B: Wasm Only ---
     for (let i = 0; i < totalIterations; i++) {
-      const isCold = (i === 0);
-      const phase = isCold ? 'cold' : 'warm';
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
@@ -187,7 +212,6 @@ export async function* runEvaluation(
         
         evalCase.wasmTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'wasm',
           selectedRuntime: 'wasm',
@@ -195,9 +219,9 @@ export async function* runEvaluation(
           timestamp: new Date().toISOString()
         });
       } catch (err) {
+        hasFailures = true;
         evalCase.wasmTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'wasm',
           selectedRuntime: 'wasm',
@@ -209,27 +233,22 @@ export async function* runEvaluation(
 
     // --- Mode C: Adaptive ---
     for (let i = 0; i < totalIterations; i++) {
-      const isCold = (i === 0);
-      const phase = isCold ? 'cold' : 'warm';
       const isWarmup = i < config.warmupIterations;
       
       let selectedRuntime: RuntimeType | undefined = undefined;
       try {
-        // Selection overhead measurement
         const sStart = performance.now();
         const characteristics = analyzeWorkload(config.workloadId, size);
         selectedRuntime = selectRuntime(characteristics, policy);
         const sEnd = performance.now();
         const selectionOverheadMs = sEnd - sStart;
 
-        // Execution
         const eStart = performance.now();
         await runner(size, selectedRuntime);
         const eEnd = performance.now();
 
         evalCase.adaptiveTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'adaptive',
           selectedRuntime,
@@ -238,9 +257,9 @@ export async function* runEvaluation(
           timestamp: new Date().toISOString()
         });
       } catch (err) {
+        hasFailures = true;
         evalCase.adaptiveTrials.push({
           trialIndex: i,
-          phase,
           isWarmup,
           executionMode: 'adaptive',
           selectedRuntime,
@@ -256,11 +275,10 @@ export async function* runEvaluation(
 
     run.cases.push(evalCase);
     
-    // Yield progress after each size
     yield { ...run };
   }
 
-  run.status = 'Completed';
+  run.status = hasFailures ? 'CompletedWithFailures' : 'Completed';
   yield { ...run };
   return run;
 }

@@ -1,28 +1,35 @@
 # Testing Strategy
 
-Because WASWIT is a research-focused experimental framework, the testing strategy focuses heavily on algorithmic parity, measurement accuracy, and methodology enforcement.
+Given the strict requirement for algorithmic parity, determinism, and research integrity, the testing strategy covers multiple layers.
 
-## 1. Unit Testing
-- **What:** Individual functions in both JS and Rust, as well as the Workload Analyzer and Selection Engine logic.
-- **Verification:** Ensures that helper functions and routing logic behave exactly as configured by the established thresholds.
+## 1. Unit Testing (Vitest)
+Unit tests operate in a simulated Node.js/JSDOM environment.
+- **Goal:** Verify logic components independent of the browser.
+- **Coverage:**
+  - `analyzer`, `selector`, `calibrator` and `engine` logic.
+  - Verification that the `calibrator` rejects noisy data and adheres strictly to crossover rules.
+  - Proof that the evaluation `engine` maintains immutable snapshots of the `FrozenSelectionPolicy` and blocks configuration overlaps.
+  - Direct execution mock validations confirming the exact single-path invocation of Adaptive dispatch without conflating global calls.
+  - Independent JS algorithms ensuring baseline deterministic output.
+  - Statistics module checking for mathematical invariants.
 
-## 2. Integration / Algorithmic Parity Testing
-- **What:** Comparing the output of the JS execution layer against the Wasm execution layer.
-- **Verification:** Crucial for scientific integrity. For any given input, the JS algorithm and the Rust/Wasm algorithm *must* produce the exact same output. We utilize deterministic input generation (no pseudo-random numbers) to guarantee reliable, floating-point-perfect parity comparisons between environments. If they differ, the benchmark is mathematically invalid.
-- **Strategy Note (Phase 1B Remediation):** We strictly prohibit "silent skips" in unit tests. Because Node/JSDOM environments lack native synchronous `fetch` required to seamlessly initialize WebAssembly, we removed the Wasm parity logic from Vitest. Instead, Playwright serves as the definitive JS/Wasm integration parity test, ensuring the Wasm module genuinely executes in a real browser context. Rust unit tests (`cargo test`) and JS unit tests (`vitest`) run independently to verify pure algorithmic correctness.
+## 2. WebAssembly Core Testing (Cargo Test)
+Rust unit tests compiled natively (not Wasm).
+- **Goal:** Verify that the core algorithms in Rust behave correctly before being compiled to WebAssembly.
+- **Coverage:** Native matrix multiplication, merge sort, and SHA-256 logic.
 
-## 3. End-to-End (E2E) Testing
-- **What:** Simulating a user configuring an experiment, running the calibration phase, freezing thresholds, and running the evaluation phase.
-- **Verification:** Ensures the UI correctly triggers the separate engines without crossover state contamination.
+## 3. End-to-End Parity & Smoke Testing (Playwright)
+Integration tests running in a real headless browser.
+- **Goal:** Prove that the compiled WebAssembly and the JavaScript implementations produce *exactly identical* outputs when given identical deterministic inputs in a real browser environment.
+- **Coverage:**
+  - `parity.spec.ts`: Executes across all workload types across sample bounds.
+  - `selector.spec.ts`: End-to-end validation of the runtime selector routing against an immutable fixture.
+  - `dashboard.spec.ts`: Validates that empty state UI elements render and function as expected before experimental data collection begins.
 
-## 4. Browser Compatibility Testing
-- **What:** Running the framework across different browser engines (e.g., Chromium, Gecko, WebKit).
-- **Verification:** Ensures that Wasm instantiation and the Performance API behave consistently, documenting any browser-specific performance anomalies.
-
-## 5. Error & Failure Testing
-- **What:** Providing extremely large inputs or malformed data.
-- **Verification:** Ensures the application handles out-of-memory errors gracefully (especially WebAssembly memory allocation limits) without crashing the entire browser tab.
-
-## 6. Performance Benchmarking & Reproducibility
-- **What:** Running the same benchmark suite multiple times on the same machine using deterministically generated inputs.
-- **Verification:** Ensures that the variance between runs is statistically manageable and that raw data preservation functions correctly.
+## 4. Continuous Integration / Static Auditing (CLI Pipeline)
+Scripts enforce architectural integrity directly via Git checks.
+- **Goal:** Maintain zero drift between Phase structures.
+- **Coverage:**
+  - Banning of `Math.random` usage across the repository.
+  - Banning of the native `Array.prototype.sort` to preserve standard sorting comparisons.
+  - Pre-commit verifications confirming `npm run build:wasm` and `next build` compile successfully.

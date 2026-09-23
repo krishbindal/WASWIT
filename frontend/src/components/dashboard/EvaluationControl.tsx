@@ -11,14 +11,14 @@ interface EvaluationControlProps {
 }
 
 export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: EvaluationControlProps) {
-  const [status, setStatus] = useState<'Idle' | 'Preparing' | 'Running' | 'Completed' | 'Failed'>('Idle');
+  const [status, setStatus] = useState<'Idle' | 'Preparing' | 'Running' | 'Completed' | 'CompletedWithFailures' | 'Failed'>('Idle');
   const [error, setError] = useState<string | null>(null);
   const [completedRun, setCompletedRun] = useState<EvaluationRun | null>(null);
 
   const defaultGrids: Record<WorkloadId, number[]> = {
-    matrix: [50, 150, 250],
+    matrix: [75, 175, 275],
     sort: [1500, 2500, 3500],
-    sha256: [1000, 5000, 10000]
+    sha256: [1250, 5000, 10000]
   };
 
   const handleRun = async () => {
@@ -35,7 +35,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
       evaluationGridSizes: defaultGrids[workloadId],
       warmupIterations: 3,
       measurementIterations: 10,
-      generationOffset: 42 
+      generationParams: { matrixOffset: 42 } 
     };
 
     try {
@@ -74,7 +74,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           status === 'Idle' ? 'bg-gray-100 text-gray-800' :
           status === 'Running' || status === 'Preparing' ? 'bg-blue-100 text-blue-800 animate-pulse' :
-          status === 'Completed' ? 'bg-green-100 text-green-800' :
+          (status === 'Completed' || status === 'CompletedWithFailures') ? 'bg-green-100 text-green-800' :
           'bg-red-100 text-red-800'
         }`}>
           {status}
@@ -94,7 +94,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
           {status === 'Running' ? 'Evaluating...' : 'Run Independent Evaluation'}
         </button>
 
-        {status === 'Completed' && completedRun && (
+        {(status === 'Completed' || status === 'CompletedWithFailures') && completedRun && (
           <button
             onClick={handleExport}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"

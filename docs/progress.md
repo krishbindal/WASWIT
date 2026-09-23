@@ -58,8 +58,8 @@
 - Deterministic reproducible input generators for each workload. (Merge Sort uses the exact 32-bit LCG generator; SHA-256 uses its deterministic index-based byte formula; Matrix multiplication uses deterministic index-derived numeric values.)
 - Unified E2E Playwright `parity.spec.ts` proving zero-skip equivalence across JS and Wasm.
 
-## Phase 3: Selection Engine & Adaptive Logic (Completed - Phase 3)
-**Status:** Completed & Verified
+## Phase 3: Selection Engine & Adaptive Logic
+**Status:** Completed & Certified
 **Goals:**
 - Implement the WASWIT workload analyzer.
 - Build the deterministic offline calibration derivation engine.
@@ -70,8 +70,21 @@
 - Offline `calibrator` sweeping parameter grids using the Benchmark Engine to derive policies based on the sustained `median-crossover-consistent-v2` rule.
 - Pure `selector` executing against deeply frozen rules, defaulting correctly for unseen bounds, independent of historical runtime observation.
 
-## Phase 4: UI & Visualization (Pending)
-**Status:** Not Started
+## Phase 4A: UI & Visualization
+**Status:** Completed & Certified
 **Goals:**
-- Build frontend dashboard.
-- Integrate Recharts for visualizing metrics.
+- Build frontend dashboard displaying the pre-frozen policy and structural architecture.
+**Key Deliverables:**
+- Rendered UI reflecting explicit bounds and provenance.
+- Empty states and clean separation between evaluation metrics and calibration results.
+
+## Phase 4B: Evaluation Engine Implementation
+**Status:** Completed & Verified
+**Goals:**
+- Ensure scientific integrity by thoroughly separating Phase 4B evaluation from Phase 3 empirical calibration data.
+**Key Deliverables:**
+- Wrote deterministic validation functions proving strict non-overlap of execution grids between calibration sweeps and evaluation grids.
+- Clarified warmed execution timing definitions, refactoring types away from invalid cold-start labels.
+- Constructed a rigorously immutable Test Policy fixture (`uiPolicyFixture`) to ensure complete immutability mapping down to object scopes.
+- Captured partial evaluation failures organically inside standard payload reporting without fabricating zeroes.
+- Designed precision Dependency Injected Unit Tests accurately isolating Adaptive execution routines directly.

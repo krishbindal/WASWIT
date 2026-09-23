@@ -20,21 +20,21 @@ The goal of this phase is to characterize the performance of JS and Wasm indepen
 After Calibration, the derived boundaries are embedded into an explicit, deeply frozen `SelectionPolicy` object.
 **Crucial Rule:** The live `Selector` is a pure function. It does not benchmark, it does not adapt to execution history, and no tuning of thresholds will occur based on the results of the subsequent Evaluation Phase.
 
-## 3. Independent Evaluation Phase
+## 3. Independent Evaluation Phase (Phase 4B Implemented)
 The goal of this phase is to test the frozen WASWIT engine against the static baselines.
 
-1. **Independent Workloads:** We will generate *new* workload instances (different seeds or varying mixed-size batches) that were not used during calibration.
-2. **Execution Modes:** The workload batch will be executed entirely in:
+1. **Independent Workloads:** We generate *new* workload instances on explicit evaluation grids that have *zero overlap* with the calibration grids to prevent data contamination.
+2. **Execution Modes:** The workload batch is executed entirely in:
    - Mode A: Static JavaScript-only
    - Mode B: Static WebAssembly-only
    - Mode C: WASWIT Adaptive
-3. **Measurement Integrity:** We will measure Total Execution Time, explicitly recording cold executions (first run) separately from warm executions (subsequent runs).
+3. **Measurement Integrity:** We measure Total Execution Time using explicit warm-up iterations. Evaluation purely represents **warmed execution**. We do *not* label sequential Mode A/B/C trials as equivalent cold starts.
+4. **Adaptive Constraints:** The adaptive branch (Mode C) dynamically executes *exactly one* selected runtime based solely on the frozen policy.
 
 ## 4. Analysis and Handling of Results
-- **Summary Statistics:** We will use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean with Standard Deviation** to report variability.
-- **Outlier Handling:** Extreme outliers (e.g., caused by OS-level interrupts) will be retained in raw data but noted if they significantly skew the standard deviation.
-- **Environment Recording:** Every test run will strictly log:
-  - Browser name and version (e.g., Chrome 120.x)
-  - Operating System
-  - Hardware specifications (CPU tier, RAM)
-- **Raw Data Preservation:** All raw JSON timing data will be saved to ensure reproducibility and transparency.
+- **Summary Statistics:** We use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean** to report variability. Warm-up trials and explicitly errored trials are strictly excluded from summaries.
+- **Partial Failures:** Runs containing failed trials yield a `CompletedWithFailures` status. Elapsed times are not fabricated.
+- **Environment Recording:** Every test run strictly logs browser versions, OS, and hardware specifications.
+- **Raw Data Preservation:** All raw JSON timing data is saved to ensure reproducibility and transparency.
+
+*Note: Phase 4B validates the evaluation framework and integrity rules. Final performance conclusions are reserved for Phase 5 data collection.*

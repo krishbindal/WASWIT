@@ -2,42 +2,19 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { runEvaluation } from './engine';
 import { EvaluationConfig } from './types';
 import { FrozenSelectionPolicy } from '../selection/types';
-import * as matrixWorkload from '../workloads/matrix';
-import * as wasmWorkload from '../workloads/wasm';
-
-vi.mock('../workloads/matrix', () => ({
-  generateDeterministicMatrix: vi.fn(),
-  multiplyMatricesJS: vi.fn(() => new Float32Array())
-}));
-
-vi.mock('../workloads/sort', () => ({
-  generateSortInput: vi.fn(() => new Int32Array()),
-  mergeSortJS: vi.fn(() => new Int32Array())
-}));
-
-vi.mock('../workloads/sha256', () => ({
-  generateSha256Input: vi.fn(() => new Uint8Array()),
-  sha256JS: vi.fn(() => new Uint8Array())
-}));
-
-vi.mock('../workloads/wasm', () => ({
-  multiplyMatricesWasm: vi.fn(async () => new Float32Array()),
-  mergeSortWasm: vi.fn(async () => new Int32Array()),
-  sha256Wasm: vi.fn(async () => new Uint8Array())
-}));
 
 describe('Evaluation Engine - Execution Path Verification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('proves single-path dispatch for adaptive execution', async () => {
+  it('proves single-path dispatch for adaptive execution (javascript)', async () => {
     const config: EvaluationConfig = {
       workloadId: 'matrix',
       evaluationGridSizes: [100],
       warmupIterations: 0,
       measurementIterations: 1,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
 
     const policy: FrozenSelectionPolicy = {
@@ -58,30 +35,75 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       }
     };
 
-    const iterator = runEvaluation(config, policy, 'eval-path-test');
-    for await (const _ of iterator) {} // Execute fully
+    const mockRunner = vi.fn(async (size: number, runtime: string) => new Float32Array());
 
-    // In JS-only mode, multiplyMatricesJS is called once
-    // In Wasm-only mode, multiplyMatricesWasm is called once
-    // In Adaptive mode (for size 100), rule picks 'javascript', so multiplyMatricesJS called a second time
-    // Total calls expected: JS (2), Wasm (1)
+    const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner);
+    const results = [];
+    for await (const res of iterator) {
+      results.push(res);
+    }
+    const finalRun = results[results.length - 1];
     
-    expect(matrixWorkload.multiplyMatricesJS).toHaveBeenCalledTimes(2);
-    expect(wasmWorkload.multiplyMatricesWasm).toHaveBeenCalledTimes(1);
+    // Evaluate the trials produced in Mode C (adaptive)
+    const adaptiveTrial = finalRun.cases[0].adaptiveTrials[0];
+    expect(adaptiveTrial.selectedRuntime).toBe('javascript');
+
+    // Filter mock calls that occurred exactly for Mode C
+    // Since Mode A (JS) runs first, Mode B (Wasm) runs second, Mode C (Adaptive) runs third
+    // The sequence for 1 iteration is: 
+    // call 1: (100, 'javascript') [Mode A]
+    // call 2: (100, 'wasm') [Mode B]
+    // call 3: (100, 'javascript') [Mode C]
     
-    // Now test a size that picks Wasm
-    vi.clearAllMocks();
-    config.evaluationGridSizes = [300]; // rule is max 200 JS, so falls back to default 'wasm'
+    expect(mockRunner.mock.calls[2]).toEqual([100, 'javascript']);
+    expect(mockRunner).toHaveBeenCalledTimes(3);
+  });
+
+  it('proves single-path dispatch for adaptive execution (wasm)', async () => {
+    const config: EvaluationConfig = {
+      workloadId: 'matrix',
+      evaluationGridSizes: [300],
+      warmupIterations: 0,
+      measurementIterations: 1,
+      generationParams: { matrixOffset: 0 }
+    };
+
+    const policy: FrozenSelectionPolicy = {
+      version: 'test-ver',
+      derivationRule: 'test-rule',
+      workloads: {
+        matrix: {
+          workloadId: 'matrix',
+          defaultRuntime: 'wasm', // Size 300 will fall back to wasm
+          rules: [{ maxInputSize: 200, runtime: 'javascript' }], 
+          provenance: {
+            gridSizes: [150],
+            warmupIterations: 1,
+            measurementIterations: 2,
+            timestamp: '2026-09-23T00:00:00Z'
+          }
+        }
+      }
+    };
+
+    const mockRunner = vi.fn(async (size: number, runtime: string) => new Float32Array());
+
+    const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner);
+    const results = [];
+    for await (const res of iterator) {
+      results.push(res);
+    }
+    const finalRun = results[results.length - 1];
     
-    const iteratorWasm = runEvaluation(config, policy, 'eval-path-test-2');
-    for await (const _ of iteratorWasm) {} // Execute fully
+    const adaptiveTrial = finalRun.cases[0].adaptiveTrials[0];
+    expect(adaptiveTrial.selectedRuntime).toBe('wasm');
+
+    // The sequence for 1 iteration is: 
+    // call 1: (300, 'javascript') [Mode A]
+    // call 2: (300, 'wasm') [Mode B]
+    // call 3: (300, 'wasm') [Mode C]
     
-    // In JS-only mode, multiplyMatricesJS is called once
-    // In Wasm-only mode, multiplyMatricesWasm is called once
-    // In Adaptive mode (for size 300), fallback picks 'wasm', so multiplyMatricesWasm called a second time
-    // Total calls expected: JS (1), Wasm (2)
-    
-    expect(matrixWorkload.multiplyMatricesJS).toHaveBeenCalledTimes(1);
-    expect(wasmWorkload.multiplyMatricesWasm).toHaveBeenCalledTimes(2);
+    expect(mockRunner.mock.calls[2]).toEqual([300, 'wasm']);
+    expect(mockRunner).toHaveBeenCalledTimes(3);
   });
 });

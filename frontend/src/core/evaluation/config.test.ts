@@ -28,7 +28,7 @@ describe('Evaluation Engine - Config Validation', () => {
       evaluationGridSizes: [100], // overlap!
       warmupIterations: 3,
       measurementIterations: 10,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
     expect(() => validateEvaluationConfig(config, policy)).toThrow(/Grid overlap/);
   });
@@ -39,7 +39,7 @@ describe('Evaluation Engine - Config Validation', () => {
       evaluationGridSizes: [500, 400], // unsorted
       warmupIterations: 3,
       measurementIterations: 10,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
     expect(() => validateEvaluationConfig(config, policy)).toThrow(/strictly ascending/);
   });
@@ -50,7 +50,7 @@ describe('Evaluation Engine - Config Validation', () => {
       evaluationGridSizes: [400],
       warmupIterations: -1,
       measurementIterations: 10,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
     expect(() => validateEvaluationConfig(config, policy)).toThrow(/Invalid warmupIterations/);
   });
@@ -61,7 +61,7 @@ describe('Evaluation Engine - Config Validation', () => {
       evaluationGridSizes: [50, 150, 250], // completely disjoint from [100, 200, 300]
       warmupIterations: 3,
       measurementIterations: 10,
-      generationOffset: 0
+      generationParams: { matrixOffset: 0 }
     };
     expect(() => validateEvaluationConfig(config, policy)).not.toThrow();
   });
