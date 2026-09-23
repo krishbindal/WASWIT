@@ -24,12 +24,13 @@ After Calibration, the derived boundaries are embedded into an explicit, deeply 
 The goal of this phase is to test the frozen WASWIT engine against the static baselines.
 
 1. **Independent Workloads:** We generate *new* workload instances on explicit evaluation grids that have *zero overlap* with the calibration grids to prevent data contamination.
-2. **Execution Modes:** The workload batch is executed entirely in:
+2. **Timing Integrity:** Deterministic input generation and equivalent cross-runtime representations are prepared exactly once per evaluation case, entirely outside the measured timing window. Both warmups and measured trials consume these pre-prepared inputs. The `elapsedMs` measurement strictly wraps computational execution only.
+3. **Execution Modes:** The workload batch is executed entirely in:
    - Mode A: Static JavaScript-only
    - Mode B: Static WebAssembly-only
    - Mode C: WASWIT Adaptive
-3. **Measurement Integrity:** We measure Total Execution Time using explicit warm-up iterations. Evaluation purely represents **warmed execution**. We do *not* label sequential Mode A/B/C trials as equivalent cold starts.
-4. **Adaptive Constraints:** The adaptive branch (Mode C) dynamically executes *exactly one* selected runtime based solely on the frozen policy.
+4. **Measurement Integrity:** We measure Execution Time using explicit warm-up iterations. Evaluation purely represents **warmed execution**. We do *not* label sequential Mode A/B/C trials as equivalent cold starts. No cold-start conclusions are made.
+5. **Adaptive Constraints:** The adaptive branch (Mode C) dynamically executes *exactly one* selected runtime based solely on the frozen policy.
 
 ## 4. Analysis and Handling of Results
 - **Summary Statistics:** We use the **Median** to represent typical execution time (to resist browser garbage collection spikes) and the **Mean** as a secondary central tendency metric. Warm-up trials and explicitly errored trials are strictly excluded from summaries.

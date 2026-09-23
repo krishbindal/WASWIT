@@ -35,14 +35,26 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       }
     };
 
-    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => new Float32Array());
+    const jsSpy = vi.fn();
+    const wasmSpy = vi.fn();
+
+    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => {
+      if (executionMode === 'adaptive') {
+        if (runtime === 'javascript') jsSpy();
+        if (runtime === 'wasm') wasmSpy();
+      }
+      return new Float32Array();
+    });
 
     const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner as any);
     for await (const res of iterator) {}
 
-    // Filter mock calls to strictly analyze the adaptive branch invocation independently
-    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
+    // Verify adaptive strictly executed only JS
+    expect(jsSpy).toHaveBeenCalledTimes(1);
+    expect(wasmSpy).toHaveBeenCalledTimes(0);
 
+    // Keep existing semantic proof
+    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
     expect(adaptiveCalls.length).toBe(1);
     expect(adaptiveCalls[0][1]).toBe('javascript');
   });
@@ -74,13 +86,25 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       }
     };
 
-    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => new Float32Array());
+    const jsSpy = vi.fn();
+    const wasmSpy = vi.fn();
+
+    const mockRunner = vi.fn(async (size: number, runtime: string, executionMode: ExecutionMode) => {
+      if (executionMode === 'adaptive') {
+        if (runtime === 'javascript') jsSpy();
+        if (runtime === 'wasm') wasmSpy();
+      }
+      return new Float32Array();
+    });
 
     const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner as any);
     for await (const res of iterator) {}
 
-    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
+    // Verify adaptive strictly executed only Wasm
+    expect(wasmSpy).toHaveBeenCalledTimes(1);
+    expect(jsSpy).toHaveBeenCalledTimes(0);
 
+    const adaptiveCalls = mockRunner.mock.calls.filter(call => call[2] === 'adaptive');
     expect(adaptiveCalls.length).toBe(1);
     expect(adaptiveCalls[0][1]).toBe('wasm');
   });

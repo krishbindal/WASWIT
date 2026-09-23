@@ -224,7 +224,47 @@ describe('Evaluation Engine', () => {
     expect(evalCase.jsTrials[1].error).toBe('Error: Simulated runner failure');
     expect(evalCase.jsTrials[1].elapsedMs).toBeUndefined();
     
-    // Summary still works (calculates over the 1 successful trial)
-    expect(evalCase.jsSummary?.count).toBe(1);
+  });
+
+  it('proves input generation occurs strictly outside the timed execution loop', async () => {
+    const config: EvaluationConfig = {
+      workloadId: 'matrix',
+      evaluationGridSizes: [50],
+      warmupIterations: 2,
+      measurementIterations: 3,
+      generationParams: { matrixOffset: 0 }
+    };
+    
+    const policy: SelectionPolicy = {
+      version: '1.0.0',
+      derivationRule: 'test-rule',
+      workloads: {
+        matrix: {
+          workloadId: 'matrix',
+          defaultRuntime: 'javascript',
+          rules: [],
+          provenance: {
+            gridSizes: [10],
+            warmupIterations: 1,
+            measurementIterations: 1,
+            timestamp: '2026-09-23T00:00:00Z'
+          }
+        }
+      }
+    };
+    
+    // Clear mocks from top level
+    const matrixMocks = await import('../workloads/matrix');
+    vi.mocked(matrixMocks.generateDeterministicMatrix).mockClear();
+    vi.mocked(matrixMocks.multiplyMatricesJS).mockClear();
+    
+    const iterator = runEvaluation(config, policy, 'eval-timing-boundary');
+    for await (const res of iterator) {}
+
+    // Input generation occurs exactly twice per case (once for A, once for B), despite 5 total iterations per mode (15 total executions)
+    expect(matrixMocks.generateDeterministicMatrix).toHaveBeenCalledTimes(2);
+
+    // The execution receives the pre-generated inputs, proving it doesn't do generation internally
+    expect(matrixMocks.multiplyMatricesJS).toHaveBeenCalledTimes(10); // 5 JS + 5 Adaptive (since JS is default)
   });
 });

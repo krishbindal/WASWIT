@@ -76,34 +76,38 @@ export function calculateSummary(trials: EvaluationTrial[]): EvaluationSummarySt
   return { count, min, max, mean, median };
 }
 
-function getWorkloadRunner(workloadId: WorkloadId, config: EvaluationConfig) {
-  return async (size: number, runtime: RuntimeType) => {
-    if (workloadId === 'matrix') {
-      const offset = config.generationParams?.matrixOffset ?? 0;
-      const a = generateDeterministicMatrix(size, offset);
-      const b = generateDeterministicMatrix(size, offset + 1);
+function createWorkloadExecutor(workloadId: WorkloadId, size: number, config: EvaluationConfig) {
+  if (workloadId === 'matrix') {
+    const offset = config.generationParams?.matrixOffset ?? 0;
+    const a = generateDeterministicMatrix(size, offset);
+    const b = generateDeterministicMatrix(size, offset + 1);
+    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
       if (runtime === 'javascript') {
         return multiplyMatricesJS(a, b, size);
       } else {
         return multiplyMatricesWasm(a, b, size);
       }
-    } else if (workloadId === 'sort') {
-      const input = generateSortInput(size);
+    };
+  } else if (workloadId === 'sort') {
+    const input = generateSortInput(size);
+    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
       if (runtime === 'javascript') {
         return mergeSortJS(input);
       } else {
         return mergeSortWasm(input);
       }
-    } else if (workloadId === 'sha256') {
-      const input = generateSha256Input(size);
+    };
+  } else if (workloadId === 'sha256') {
+    const input = generateSha256Input(size);
+    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
       if (runtime === 'javascript') {
         return sha256JS(input);
       } else {
         return sha256Wasm(input);
       }
-    }
-    throw new Error(`Unsupported workload ${workloadId}`);
-  };
+    };
+  }
+  throw new Error(`Unsupported workload ${workloadId}`);
 }
 
 export async function* runEvaluation(
@@ -142,7 +146,6 @@ export async function* runEvaluation(
   run.status = 'Running';
   yield { ...run };
 
-  const runner = _testRunner || getWorkloadRunner(config.workloadId, config);
   let hasFailures = false;
 
   for (const size of config.evaluationGridSizes) {
@@ -173,12 +176,17 @@ export async function* runEvaluation(
 
     const totalIterations = config.warmupIterations + config.measurementIterations;
 
+    // 1. & 2. Deterministically generate the input and prepare the representation OUTSIDE the timing window
+    const executeWorkload = _testRunner 
+      ? async (runtime: RuntimeType, mode: ExecutionMode) => _testRunner(size, runtime, mode)
+      : createWorkloadExecutor(config.workloadId, size, config);
+
     // --- Mode A: JS Only ---
     for (let i = 0; i < totalIterations; i++) {
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
-        await runner(size, 'javascript', 'javascript');
+        await executeWorkload('javascript', 'javascript');
         const end = performance.now();
         
         evalCase.jsTrials.push({
@@ -207,7 +215,7 @@ export async function* runEvaluation(
       const isWarmup = i < config.warmupIterations;
       try {
         const start = performance.now();
-        await runner(size, 'wasm', 'wasm');
+        await executeWorkload('wasm', 'wasm');
         const end = performance.now();
         
         evalCase.wasmTrials.push({
@@ -245,7 +253,7 @@ export async function* runEvaluation(
 
         const eStart = performance.now();
         if (!selectedRuntime) throw new Error('Selector failed');
-        await runner(size, selectedRuntime, 'adaptive');
+        await executeWorkload(selectedRuntime, 'adaptive');
         const eEnd = performance.now();
 
         evalCase.adaptiveTrials.push({
