@@ -56,7 +56,7 @@ All combinations executed safely without triggering browser unresponsiveness.
 ### PROVISIONAL RECOMMENDATION
 - **Final Warmup Iterations**: 5. (Supported by executed evidence).
 - **Final Measurement Iterations**: 30. (Supported by executed evidence).
-- **Final Independent Replicates**: 10. (Actually executed and supported by Option B PoC).
+- **Planned Final Independent Replicates**: 10. The pilot established that repeated fresh-context orchestration is operationally feasible; it did not establish statistical sufficiency of N=10.
 
 ## F. Zero-Timing Frequency
 
