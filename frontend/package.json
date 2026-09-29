@@ -7,7 +7,11 @@
     "build:wasm": "cd ../wasm && wasm-pack build --target web --out-dir ../frontend/src/wasm",
     "build": "npm run build:wasm && next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:e2e": "playwright test",
+    "research:pilot": "node scripts/run-research-acquisition.mjs pilot",
+    "research:calibrate": "node scripts/run-research-acquisition.mjs calibrate",
+    "research:evaluate": "node scripts/run-research-acquisition.mjs evaluate"
   },
   "dependencies": {
     "next": "16.3.5",

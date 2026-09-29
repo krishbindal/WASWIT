@@ -32,7 +32,7 @@ An internal inconsistency in the generated artifact's metadata (browserVersion =
   - `navigator.userAgent` (Page level): `Chrome/153.0.8010.12`
 - **Diagnosis**: Playwright executed its local bundled Chromium binary, whose true engine version is `138.0.7204.102`.
 - **UserAgent Spoofing**: The page-level `userAgent` string containing "153.0.8010.12" is a known artifact of Playwright's `devices['Desktop Chrome']` preset, which forcibly spoofs the user agent inside the browser context while the underlying physical engine remains unchanged.
-- **Conclusion**: The actual execution environment (Chromium 138.0.7204.102 on Windows) was successfully and deterministically recorded. The existing 17:33 calibration dataset accurately reflects the true execution engine and is sealed as perfectly valid without requiring a rerun.
+- **Conclusion**: The actual execution environment (Chromium 138.0.7204.102 on Environment-provided WMI Caption, manually verified as Windows 11) was successfully and deterministically recorded. The existing 17:33 calibration dataset accurately reflects the true execution engine and is sealed as perfectly valid without requiring a rerun.
 
 All observations accurately reflect pure elapsedMs timing with input generation/preparation fully excluded. Invalid samples were not modified or zeros fabricated.
 

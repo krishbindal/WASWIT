@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('WASWIT Phase 4B Evaluation', () => {
+test.describe('WASWIT Interactive Evaluation Harness', () => {
   // Use a longer timeout for full suite
   test.setTimeout(120000);
 
@@ -10,7 +10,7 @@ test.describe('WASWIT Phase 4B Evaluation', () => {
     const workloads = [
       { name: 'Matrix Multiplication', grid: '75, 175, 275' },
       { name: 'Merge Sort', grid: '1500, 2500, 3500' },
-      { name: 'SHA-256', grid: '1250, 5000, 10000' }
+      { name: 'SHA-256', grid: '2500, 7500, 12500' }
     ];
 
     for (const wl of workloads) {
@@ -18,14 +18,11 @@ test.describe('WASWIT Phase 4B Evaluation', () => {
       await page.getByRole('button', { name: wl.name }).click();
 
       // 2. Confirm Evaluation Control is enabled
-      const evalHeader = page.getByRole('heading', { name: 'Phase 4B: Independent Evaluation' });
+      const evalHeader = page.getByRole('heading', { name: 'Interactive Evaluation Harness' });
       await expect(evalHeader).toBeVisible();
 
-      // Ensure the test policy is loaded
-      await expect(page.getByText('Evaluation Test Policy Loaded')).toBeVisible();
-
       // 3. Start evaluation
-      const runButton = page.getByRole('button', { name: 'Run Independent Evaluation' });
+      const runButton = page.getByRole('button', { name: 'Run Interactive Evaluation' });
       await expect(runButton).toBeEnabled();
       await runButton.click();
 

@@ -1,3 +1,6 @@
+> [!WARNING]
+> **[HISTORICAL]** This document is superseded by the Phase 5 evidence package.
+
 # WASWIT - Phase 4B Final Integrity Remediation Report
 
 ## 1. Executive Summary

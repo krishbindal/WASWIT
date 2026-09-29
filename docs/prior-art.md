@@ -16,7 +16,14 @@ An investigation into existing academic literature and technical implementations
 - **Selection mechanism:** N/A (Static benchmarking).
 - **How it differs from WASWIT:** These papers provide the foundational metrics confirming that JS is sometimes faster than Wasm depending on the workload and overhead. However, they do not attempt to build a runtime framework that automatically switches between them.
 
-## 3. Mobile-Cloud Offloading Systems
+## 3. Dynamic Selection in Web-based ML (Lee & Jeon, May 2026)
+- **Problem solved:** Optimizing DNN execution on web browsers by adaptively selecting between WebGL, WebGPU, and WebAssembly based on tensor shapes and dynamic profiling.
+- **Environment:** Web browsers (TensorFlow.js).
+- **Runtimes involved:** WebGL, WebGPU, WebAssembly (CPU).
+- **Selection mechanism:** A pre-trained cost model combined with runtime profiling.
+- **How it differs from WASWIT:** Lee & Jeon focus exclusively on Deep Neural Network (DNN) inferences and heavily leverage heterogeneous compute (GPU). WASWIT narrows the gap specifically to general-purpose, non-ML CPU workloads where the primary friction is the JS/Wasm engine boundary.
+
+## 4. Mobile-Cloud Offloading Systems
 - **Problem solved:** Saving battery or increasing speed on mobile devices by sending tasks to the cloud.
 - **Environment:** Mobile browser / Cloud servers.
 - **Runtimes involved:** Local JavaScript/Wasm vs. Remote Node/Native.

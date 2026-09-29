@@ -26,6 +26,11 @@ function getReplicateModeOrder(replicate: number): string[] {
 test.describe('Phase 5E Final Evaluation', () => {
     test.setTimeout(1800000); // 30 mins
 
+    test.skip(
+      process.env.WASWIT_RESEARCH_ACQUISITION !== '1',
+      'Research acquisition disabled by default.'
+    );
+
     test('Collect Final Independent Evaluation Data', async ({ browser, browserName }) => {
         // Preflight Configuration Validation
         const policySnapshot = JSON.parse(JSON.stringify(phase5FinalPolicyRaw));
@@ -49,7 +54,7 @@ test.describe('Phase 5E Final Evaluation', () => {
         const nodeVersion = getCmd('node --version');
 
         let browserVersion = 'Unknown';
-        let osInfo = getCmd('wmic os get Caption,Version /value') || 'Windows';
+        let osInfo = getCmd('wmic os get Caption,Version /value') || 'Unknown';
         
         let logicalProcessorCount: any = 'Unknown';
         let deviceMemory: any = 'Unknown';
@@ -95,12 +100,13 @@ test.describe('Phase 5E Final Evaluation', () => {
             policyVersion: "1.0.0-final",
             policyDerivationRule: "median-crossover-consistent-v2",
             policyArtifactPath: "frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json",
+            // NOTE: policyIntegrityHash is a semantic snapshot marker, not a cryptographic hash of the JSON.
             policyIntegrityHash: "DETERMINISTIC_SNAPSHOT_VERIFIED", 
             acquisitionSourceGitSha,
             environment: {
                 browser: browserName,
                 browserVersion,
-                browserEngine: "Blink",
+                browserEngine: browserName === 'chromium' ? 'Blink' : 'Unknown',
                 userAgent,
                 operatingSystem: osInfo,
                 logicalProcessorCount,

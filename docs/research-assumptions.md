@@ -17,3 +17,7 @@ This document clearly lists the assumptions that form the basis of the WASWIT pr
 ## 4. Measurement Precision
 **Assumption:** The Browser Performance API (`performance.now()`) provides sufficient resolution (sub-millisecond) to accurately capture execution times and selection overhead.
 **Verification:** If variance/standard deviation remains exceptionally high across all tests, it may indicate that background OS/Browser noise is drowning out the signal.
+
+## 5. Sign-Symmetry Heuristic in Testing
+**Assumption:** The sign-flip performance differential test assumes a sign-symmetry heuristic where negative dimension scaling theoretically behaves identically to positive dimension scaling. 
+**Verification:** This was implemented as a testing heuristic for edge-case error validation, and is explicitly recognized as not being an inherent mathematical property of the workload.

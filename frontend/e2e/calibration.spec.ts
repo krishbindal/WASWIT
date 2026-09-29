@@ -6,6 +6,11 @@ import { execSync } from 'child_process';
 test.describe('Phase 5C Final Calibration', () => {
     test.setTimeout(600000); // 10 minutes
 
+    test.skip(
+      process.env.WASWIT_RESEARCH_ACQUISITION !== '1',
+      'Research acquisition disabled by default.'
+    );
+
     test('Collect Final Calibration Data', async ({ browser, browserName }) => {
         const GRIDS = {
             matrix: [50, 100, 150, 200, 250, 300],
@@ -32,7 +37,7 @@ test.describe('Phase 5C Final Calibration', () => {
         const nodeVersion = getCmd('node --version');
 
         let browserVersion = 'Unknown';
-        let osInfo = getCmd('wmic os get Caption,Version /value') || 'Windows';
+        let osInfo = getCmd('wmic os get Caption,Version /value') || 'Unknown';
         
         let logicalProcessorCount: any = 'Unknown';
         let deviceMemory: any = 'Unknown';
@@ -80,7 +85,7 @@ test.describe('Phase 5C Final Calibration', () => {
             environment: {
                 browser: browserName,
                 browserVersion,
-                browserEngine: "Blink", // Assuming Chrome
+                browserEngine: browserName === 'chromium' ? 'Blink' : 'Unknown',
                 userAgent,
                 operatingSystem: osInfo,
                 logicalProcessorCount,

@@ -1,3 +1,6 @@
+> [!WARNING]
+> **[HISTORICAL]** This document is superseded by the Phase 5 evidence package.
+
 # Phase 4B Final Integrity Remediation #3 Report
 
 1. **FINAL COMMIT SHA**  

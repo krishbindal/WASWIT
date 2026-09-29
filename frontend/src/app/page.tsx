@@ -58,8 +58,15 @@ export default function Home() {
         const wasmResult2 = await multiplyMatricesWasm(a2, b2, 1);
         if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) matrixPassed = false;
 
-        try { multiplyMatricesJS(a1, b1, 2); } catch {}
-        try { await multiplyMatricesWasm(a1, b1, 2); } catch {}
+        let jsRejected = false;
+        try { multiplyMatricesJS(a1, b1, 2); } catch { jsRejected = true; }
+        
+        let wasmRejected = false;
+        try { await multiplyMatricesWasm(a1, b1, 2); } catch { wasmRejected = true; }
+        
+        if (!jsRejected || !wasmRejected) {
+            matrixPassed = false;
+        }
         
         setParityStatus(matrixPassed ? 'PASS' : 'FAIL');
 
@@ -138,28 +145,28 @@ export default function Home() {
         <DashboardShell runs={{}} frozenPolicy={uiPolicyFixture} />
 
         <section className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white">
-          <h2 className="text-2xl font-semibold mb-4">Workload Parity Tests</h2>
+          <h2 className="text-2xl font-semibold mb-4">Cross-runtime Correctness Checks</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-4 border rounded">
               <h3 className="font-semibold text-lg mb-2">Matrix Multiplication (N=3)</h3>
               <div className="mb-2 text-sm text-gray-600 font-mono break-all js-result">JS: {jsResultStr || 'Computing...'}</div>
               <div className="mb-3 text-sm text-gray-600 font-mono break-all wasm-result">Wasm: {wasmResultStr || 'Computing...'}</div>
-              <div><strong>Parity: </strong><span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{parityStatus}</span></div>
+              <div><strong>Status: </strong><span className={`font-bold parity-status ${parityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{parityStatus}</span></div>
             </div>
 
             <div className="p-4 border rounded overflow-hidden">
               <h3 className="font-semibold text-lg mb-2">Merge Sort (Multi-N)</h3>
               <div className="mb-2 text-xs text-gray-600 font-mono truncate sort-js-result">JS: {sortJsResultStr || 'Computing...'}</div>
               <div className="mb-3 text-xs text-gray-600 font-mono truncate sort-wasm-result">Wasm: {sortWasmResultStr || 'Computing...'}</div>
-              <div><strong>Parity: </strong><span className={`font-bold sort-parity-status ${sortParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sortParityStatus}</span></div>
+              <div><strong>Status: </strong><span className={`font-bold sort-parity-status ${sortParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sortParityStatus}</span></div>
             </div>
 
             <div className="p-4 border rounded overflow-hidden">
               <h3 className="font-semibold text-lg mb-2">SHA-256 Hash (Multi-N)</h3>
               <div className="mb-2 text-xs text-gray-600 font-mono truncate sha256-js-result">JS: {sha256JsResultStr || 'Computing...'}</div>
               <div className="mb-3 text-xs text-gray-600 font-mono truncate sha256-wasm-result">Wasm: {sha256WasmResultStr || 'Computing...'}</div>
-              <div><strong>Parity: </strong><span className={`font-bold sha256-parity-status ${sha256ParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sha256ParityStatus}</span></div>
+              <div><strong>Status: </strong><span className={`font-bold sha256-parity-status ${sha256ParityStatus === 'PASS' ? 'text-green-600' : 'text-red-600'}`}>{sha256ParityStatus}</span></div>
             </div>
           </div>
         </section>

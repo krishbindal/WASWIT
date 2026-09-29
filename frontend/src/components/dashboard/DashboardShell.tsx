@@ -41,10 +41,10 @@ export function DashboardShell({ runs, frozenPolicy }: DashboardShellProps) {
         <div>
           <h2 className="text-3xl font-bold">Research Dashboard</h2>
           <div className="flex gap-2 mt-2">
-            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 3 Certified</span>
-            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 4A UI</span>
-            <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 4B Eval</span>
-            {activeRun?.policy ? (
+            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs font-semibold">Phase 5H Certified</span>
+            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-semibold">Evidence Locked</span>
+            <span className="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded text-xs font-semibold">Interactive Harness</span>
+            {frozenPolicy ? (
               <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs font-semibold">Policy Loaded</span>
             ) : (
               <span className="bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-semibold">No Policy</span>

@@ -18,7 +18,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
   const defaultGrids: Record<WorkloadId, number[]> = {
     matrix: [75, 175, 275],
     sort: [1500, 2500, 3500],
-    sha256: [1250, 5000, 10000]
+    sha256: [2500, 7500, 12500]
   };
 
   const handleRun = async () => {
@@ -33,9 +33,9 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
     const config: EvaluationConfig = {
       workloadId,
       evaluationGridSizes: defaultGrids[workloadId],
-      warmupIterations: 3,
-      measurementIterations: 10,
-      ...(workloadId === 'matrix' ? { generationParams: { matrixOffset: 42 } } : {})
+      warmupIterations: 5,
+      measurementIterations: 30,
+      ...(workloadId === 'matrix' ? { generationParams: { matrixOffset: 0 } } : {})
     };
 
     try {
@@ -70,7 +70,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
   return (
     <div className="p-4 border rounded bg-white shadow-sm space-y-4">
       <div className="flex justify-between items-center border-b pb-2">
-        <h3 className="font-semibold text-lg">Phase 4B: Independent Evaluation</h3>
+        <h3 className="font-semibold text-lg">Interactive Evaluation Harness</h3>
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           status === 'Idle' ? 'bg-gray-100 text-gray-800' :
           status === 'Running' || status === 'Preparing' ? 'bg-blue-100 text-blue-800 animate-pulse' :
@@ -83,7 +83,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
       </div>
       
       <div className="text-sm text-gray-600">
-        <p>This engine performs an independent scientific evaluation of the selected workload using an explicitly defined evaluation grid separated from calibration data.</p>
+        <p>Interactive verification only. This run is not part of the locked Phase 5E research evidence.</p>
       </div>
 
       <div className="flex items-center gap-4">
@@ -92,7 +92,7 @@ export function EvaluationControl({ workloadId, policy, onEvaluationComplete }: 
           disabled={status === 'Running' || status === 'Preparing' || !policy}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          {status === 'Running' ? 'Evaluating...' : 'Run Independent Evaluation'}
+          {status === 'Running' ? 'Evaluating...' : 'Run Interactive Evaluation'}
         </button>
 
         {(status === 'Completed' || status === 'CompletedWithFailures') && completedRun && (

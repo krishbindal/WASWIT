@@ -1,3 +1,6 @@
+> [!WARNING]
+> **[HISTORICAL]** This document is superseded by the Phase 5 evidence package.
+
 # Final Phase 3 Remediation & Certification Report
 
 This report defines the authoritative, verified state of the WASWIT Phase 3 repository, demonstrating absolute compliance with strict deterministic research requirements.

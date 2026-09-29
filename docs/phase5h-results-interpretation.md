@@ -1,12 +1,12 @@
 # Phase 5H Results Interpretation
 
 ## 1. Executive Results Summary
-This document interprets the certified, independent evaluation data collected in Phase 5E and analyzed in Phase 5F. Across the evaluated grid of 13 workload-size cells (Matrix Multiplication, Merge Sort, SHA-256), the descriptive performance profiles show varied execution times between JavaScript and WebAssembly baselines. The deterministic workload-aware adaptive selector successfully identified the designated baseline per the frozen calibration policy. However, the confirmatory statistical analysis (exact paired sign permutation tests with Holm-Bonferroni correction, N=39 tests, $\alpha=0.05$) did not reject the null hypothesis of zero median paired difference for any comparison. Thus, while descriptive timing variations exist, no statistically significant performance difference is established after rigorous multiplicity correction.
+This document interprets the certified, independent evaluation data collected in Phase 5E and analyzed in Phase 5F. Across the evaluated grid of 13 workload-size cells (Matrix Multiplication, Merge Sort, SHA-256), the descriptive performance profiles show varied execution times between JavaScript and WebAssembly baselines. The deterministic workload-aware adaptive selector successfully identified the designated baseline per the frozen calibration policy. However, the confirmatory statistical analysis (exact paired sign permutation tests with Holm-Bonferroni correction, N=39 tests, $\alpha=0.05$) did not reject the null hypothesis of zero median paired difference for any comparison. Thus, while descriptive timing variations exist, the experiment did not provide sufficient evidence to reject the null hypothesis of no performance difference after rigorous multiplicity correction.
 
 ## 2. Experimental Evidence Context
 - **Workloads**: Matrix Multiplication (sizes: 75, 125, 175, 225, 275), Merge Sort (sizes: 1500, 2500, 3500, 4500), SHA-256 (sizes: 2500, 7500, 12500, 17500).
 - **Structure**: 10 independent replicates per cell; 30 measured iterations per replicate (plus 5 excluded warmups). Case-level timing defined as the median of the 30 measured iterations.
-- **Statistical Model**: Family of 39 pre-registered tests evaluated via exact paired sign permutation (1024 permutations). Alpha adjusted family-wise using the Holm-Bonferroni step-down procedure. 95% confidence intervals constructed via 10,000 percentile bootstrap resamples.
+- **Statistical Model**: Family of 39 pre-specified tests evaluated via exact paired sign permutation (1024 permutations). Alpha adjusted family-wise using the Holm-Bonferroni step-down procedure. 95% confidence intervals constructed via 10,000 percentile bootstrap resamples.
 
 ## 3. RQ1 Results
 *How does relative JavaScript/WebAssembly performance vary across workloads and input sizes?*
@@ -25,7 +25,7 @@ The adaptive selection introduces a strictly logical overhead event evaluated on
 
 ## 7. Descriptive vs Confirmatory Interpretation
 - **Descriptive**: Observed timing disparities between runtimes represent valid in-sample measurements of the execution environment. Adaptive selection matched its programmed policy.
-- **Confirmatory**: Zero out of 39 pre-registered hypotheses were rejected. The observed descriptive differences fall within the bounds of expected variance under the null hypothesis after correcting for multiple comparisons.
+- **Confirmatory**: Zero out of 39 pre-specified hypotheses were rejected. The observed descriptive differences fall within the bounds of expected variance under the null hypothesis after correcting for multiple comparisons.
 
 ## 8. Threats to Validity / Limitations
 1. **Single Environment**: Captured on a single physical host within a single browser engine (Blink/chromium 138.0.7204.102). OS and exact hardware metadata capture were blocked or obfuscated (logged as "Unknown") highlighting privacy-limited browser metadata constraints.

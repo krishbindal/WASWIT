@@ -10,7 +10,8 @@
 /**
  * Generates a deterministic flat N x N matrix.
  * Values are populated based on their indices to ensure reproducibility 
- * without relying on Math.random(), enabling perfect JS/Wasm parity checks.
+ * without relying on Math.random(), enabling targeted cross-runtime correctness checks
+ * (note: exact numerical equivalence at large N is not established due to accumulation precision differences).
  */
 export function generateDeterministicMatrix(n: number, offset: number = 0): Float32Array {
   const size = n * n;

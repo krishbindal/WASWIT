@@ -30,7 +30,7 @@ export function VisualizationDataTable({ data }: { data: VisualizationPoint[] })
             <th className="p-2">Input Size</th>
             <th className="p-2">JS Median (ms)</th>
             <th className="p-2">Wasm Median (ms)</th>
-            <th className="p-2">WASWIT Median (ms)</th>
+            <th className="p-2">Adaptive Execution Median (ms)*</th>
           </tr>
         </thead>
         <tbody>
@@ -44,6 +44,9 @@ export function VisualizationDataTable({ data }: { data: VisualizationPoint[] })
           ))}
         </tbody>
       </table>
+      <div className="text-xs text-gray-500 mt-2">
+        * Interactive harness visualization; selector overhead is not included in this displayed execution-only median.
+      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ The generation script consumed the pre-locked and certified Phase 5F output arti
 All figures are provided in high-resolution PNG and SVG formats inside `frontend/artifacts/figures/phase5g/`.
 1. **Figure 1**: `figure1-static-performance.[png/svg]` - Static performance profiles across evaluated inputs for Matrix Multiplication, Merge Sort, and SHA-256.
 2. **Figure 2**: `figure2-adaptive-vs-static.[png/svg]` - RQ3 timing relationship showing Adaptive Total Time (including singleton selection overhead) versus static baseline thresholds.
-3. **Figure 3**: `figure3-confirmatory-effects.[png/svg]` - Confirmatory effect estimates in a forest-plot layout showcasing the 39 pre-registered hypotheses and their respective 95% bootstrap confidence intervals.
+3. **Figure 3**: `figure3-confirmatory-effects.[png/svg]` - Confirmatory effect estimates in a forest-plot layout showcasing the 39 pre-specified hypotheses and their respective 95% bootstrap confidence intervals.
 4. **Figure 4**: `figure4-selection-policy.[png/svg]` - The execution of the deterministic frozen selection policy across the independent evaluation grid sizes.
 
 ## Table List

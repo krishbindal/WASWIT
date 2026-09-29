@@ -4,6 +4,11 @@ import fs from 'fs';
 import path from 'path';
 
 test.describe('Phase 5B Engineering Pilot Feasibility', () => {
+  test.skip(
+    process.env.WASWIT_RESEARCH_ACQUISITION !== '1',
+    'Research acquisition disabled by default.'
+  );
+
   test('Evaluate all candidates, Option A, Option B, and N=10 feasibility', async ({ browser }) => {
     test.setTimeout(120000); // 2 minutes for 30 contexts
 

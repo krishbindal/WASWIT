@@ -4,7 +4,9 @@
 - **Replicate Count**: 10
 - **Warmups**: 5
 - **Measurements**: 30
-- **Isolation Strategy**: Each evaluation case (workload × size × mode) runs in a fresh Playwright browser context. 
+- **Isolation Strategy**: 
+  - *Planned*: Each evaluation case runs in a fresh Playwright browser context.
+  - *Actual Deviation*: The final implementation used one fresh browser context per replicate. Individual evaluation cases used fresh pages within that context. This isolates document-level state but does NOT fully isolate OS-level, process-level, or cross-page V8/Wasm-engine JIT optimization state.
 - **Timing Boundary**: From immediately before runtime invocation to immediately after return.
 - **Failure Handling**: If an observation fails (NaN, negative, missing), the replicate fails and must be re-collected. No failures will be replaced with zeroes or fabricated timings.
 - **Policy Modification**: The `frozen-policy.ts` is used exclusively by the adaptive selector.

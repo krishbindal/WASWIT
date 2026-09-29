@@ -12,6 +12,8 @@ DOCS_DIR = os.path.join(BASE_DIR, "docs")
 os.makedirs(PHASE5H_DIR, exist_ok=True)
 
 def load_json(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Missing required input file: {path}")
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
@@ -42,12 +44,25 @@ def generate_summary_table():
         f.write("\n".join(md))
 
 def generate_integrity_json():
+    # Validate required Phase 5F inputs exist
     integrity = load_json(os.path.join(ANALYSIS_DIR, "phase5f-analysis-integrity.json"))
+    conf_tests = load_json(os.path.join(ANALYSIS_DIR, "confirmatory_tests.json"))
+    case_metrics = load_json(os.path.join(ANALYSIS_DIR, "case_level_metrics.json"))
     
-    sha_eval = integrity['RAW_ARTIFACT_SHA256']
-    sha_policy = integrity['FROZEN_POLICY_SHA256']
-    sha_sap = integrity['SAP_COMMIT_SHA']
-    sha_ana = integrity['ANALYSIS_COMMIT_SHA'] if 'ANALYSIS_COMMIT_SHA' in integrity else integrity['ANALYSIS_GIT_SHA']
+    if len(conf_tests) != 39:
+        raise ValueError("Expected 39 confirmatory tests in Phase 5F output.")
+    
+    cell_count = sum(len(sizes) for sizes in case_metrics.values())
+    if cell_count != 13:
+        raise ValueError(f"Expected 13 case metrics in Phase 5F output, got {cell_count}.")
+        
+    sha_eval = integrity.get('RAW_ARTIFACT_SHA256')
+    sha_policy = integrity.get('FROZEN_POLICY_SHA256')
+    sha_sap = integrity.get('SAP_COMMIT_SHA')
+    sha_ana = integrity.get('ANALYSIS_COMMIT_SHA', integrity.get('ANALYSIS_GIT_SHA'))
+    
+    if not all([sha_eval, sha_policy, sha_sap, sha_ana]):
+        raise ValueError("Missing critical SHA provenance in Phase 5F integrity JSON.")
     
     # We use a static base commit SHA to prevent self-referential git loops
     head_sha = "c9f0025c4ca08337d90a7681c3647d64b4f4d554"
@@ -60,8 +75,8 @@ def generate_integrity_json():
         "FROZEN_POLICY_SHA256": sha_policy,
         "SAP_COMMIT_SHA": sha_sap,
         "PHASE5F_ANALYSIS_COMMIT_SHA": sha_ana,
-        "CONFIRMATORY_TEST_COUNT": 39,
-        "EVALUATION_CELL_COUNT": 13,
+        "CONFIRMATORY_TEST_COUNT": len(conf_tests),
+        "EVALUATION_CELL_COUNT": cell_count,
         "REPLICATE_COUNT": 10,
         "BOOTSTRAP_RESAMPLES": 10000,
         "PERMUTATION_COUNT": 1024,

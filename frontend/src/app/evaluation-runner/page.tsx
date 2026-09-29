@@ -13,6 +13,7 @@ import { generateSortInput } from '@/core/workloads/sort';
 import { generateSha256Input } from '@/core/workloads/sha256';
 import initWasm from '@/wasm/waswit_wasm';
 import { selectRuntime } from '@/core/selection/selector';
+import { analyzeWorkload } from '@/core/selection/analyzer';
 import { phase5FrozenPolicy } from '@/core/selection/frozen-policy';
 import { WorkloadId, RuntimeType } from '@/core/types';
 
@@ -24,9 +25,6 @@ export default function EvaluationRunner() {
     async function runEval(workload: WorkloadId, size: number, mode: string) {
         setStatus(`Running Evaluation: ${workload} ${size} ${mode}`);
         try {
-            // Adaptive mode will use Wasm for some workloads, so we must always init Wasm
-            // to allow deterministic invocation if Wasm is selected. (Or we can conditionally 
-            // init Wasm. We'll just init Wasm anyway to be safe since Phase 4B semantics apply).
             if (mode === 'wasm' || mode === 'adaptive') {
                 await initWasm();
             }
@@ -35,11 +33,9 @@ export default function EvaluationRunner() {
             let wasmRun: any;
             let inputArgs: any[];
 
-            // GENERATION OUTSIDE TIMING
             if (workload === 'matrix') {
                 jsRun = multiplyMatricesJS;
                 wasmRun = multiplyMatricesWasm;
-                // Preserve Phase 5E explicit offset logic: matrix offset is 0 for matrix A and 1 for matrix B
                 inputArgs = [generateDeterministicMatrix(size, 0), generateDeterministicMatrix(size, 1), size];
             } else if (workload === 'sort') {
                 jsRun = mergeSortJS;
@@ -67,7 +63,8 @@ export default function EvaluationRunner() {
                 selectedRuntime = 'wasm';
             } else if (mode === 'adaptive') {
                 const t0 = performance.now();
-                const sel = selectRuntime({ workloadId: workload, inputSize: size }, phase5FrozenPolicy);
+                const characteristics = analyzeWorkload(workload, size);
+                const sel = selectRuntime(characteristics, phase5FrozenPolicy);
                 const t1 = performance.now();
                 selectionOverheadMs = t1 - t0;
                 selectedRuntime = sel;
@@ -112,12 +109,22 @@ export default function EvaluationRunner() {
     
     if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
-        const workload = params.get('workload') as WorkloadId | null;
-        const size = params.get('size');
+        const workloadParam = params.get('workload');
+        const sizeParam = params.get('size');
         const mode = params.get('mode');
         
-        if (workload && size && mode) {
-            runEval(workload, parseInt(size, 10), mode);
+        if (workloadParam && sizeParam && mode) {
+            if (workloadParam !== 'matrix' && workloadParam !== 'sort' && workloadParam !== 'sha256') {
+                setStatus('Evaluation_Failed: Unknown workload');
+                return;
+            }
+            const workload = workloadParam as WorkloadId;
+            const size = Number.parseInt(sizeParam, 10);
+            if (!Number.isFinite(size) || !Number.isInteger(size) || size <= 0) {
+                setStatus('Evaluation_Failed: Invalid size');
+                return;
+            }
+            runEval(workload, size, mode);
         }
     }
   }, []);

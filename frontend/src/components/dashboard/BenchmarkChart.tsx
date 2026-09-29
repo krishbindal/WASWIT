@@ -73,7 +73,7 @@ export function BenchmarkChart({ data }: BenchmarkChartProps) {
           <Line 
             type="monotone" 
             dataKey="adaptiveMedian" 
-            name="WASWIT" 
+            name="Adaptive Execution Median (ms)" 
             stroke="#10b981" 
             strokeWidth={2}
             strokeDasharray="5 5"
@@ -82,6 +82,9 @@ export function BenchmarkChart({ data }: BenchmarkChartProps) {
           />
         </LineChart>
       </ResponsiveContainer>
+      <div className="text-xs text-gray-500 mt-2 text-center">
+        * Interactive harness visualization; selector overhead is not included in this displayed execution-only median.
+      </div>
     </div>
   );
 }

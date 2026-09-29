@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('WASWIT application computes Workload Parity correctly for all workloads', async ({ page }) => {
+test('WASWIT application computes Cross-runtime Correctness Checks correctly for all workloads', async ({ page }) => {
   await page.goto('/');
 
   // Wait for the parity computation to complete
