@@ -33,17 +33,34 @@ test.describe('Phase 5B Engineering Pilot Feasibility', () => {
     // Just verifying that launching 10 contexts back-to-back works efficiently.
     // We'll run Matrix 150 JS 10 times.
     const n10Results: any[] = [];
-    let n10Success = true;
     for (let i = 0; i < 10; i++) {
         try {
             const ctx = await browser.newContext();
             const p = await ctx.newPage();
             await p.goto('http://localhost:3000/pilot-test-runner?optionB=js');
             await expect(p.locator('#pilot-status')).toContainText('OptionB_Complete', { timeout: 30000 });
-            n10Results.push(i);
+            const resText = await p.locator('#pilot-results').textContent();
+            const res = JSON.parse(resText || '{}');
+            n10Results.push({
+                contextIndex: i,
+                mode: res.mode,
+                workload: res.workload,
+                size: res.size,
+                warmup: res.warmup,
+                measurement: res.measurement,
+                success: res.success,
+                median: res.median,
+                sampleCount: res.sampleCount,
+                zeroCount: res.zeroCount,
+                error: res.error
+            });
             await ctx.close();
-        } catch(e) {
-            n10Success = false;
+        } catch(e: any) {
+            n10Results.push({
+                contextIndex: i,
+                success: false,
+                error: e.message
+            });
             break;
         }
     }
@@ -54,14 +71,16 @@ test.describe('Phase 5B Engineering Pilot Feasibility', () => {
         classification: "engineering-only",
         timestamp,
         protocolGitSha: "50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2",
-        pilotHarnessGitSha: "5a38044a45d298ab7ecef68942c2e6e711971038",
+        pilotBaseCommitSha: "2ba2d97bf44e90df602ec4612444c7a0f0e0f3ba",
+        pilotExecutionRevision: "engineering-remediation-run",
         browser: "Google Chrome",
         os: "Windows",
         data: {
           feasibility: parsed.feasibility,
           optionA: parsed.optionA,
           optionB: optionBResults,
-          n10Success,
+          n10Success: n10Results.filter(r => r.success).length === 10,
+          n10Results,
           n10CompletedContexts: n10Results.length
         }
     };

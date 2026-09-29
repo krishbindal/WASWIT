@@ -43,16 +43,18 @@ export default function PilotTestRunner() {
               const wasmEnd = performance.now();
               
               let totalZeros = 0;
+              let jsZeroCount = 0;
+              let wasmZeroCount = 0;
               let jsCount = 0;
               let wasmCount = 0;
               if (jsRes.success) {
-                  const zeros = jsRes.samples.filter((s: any) => s.elapsedMs === 0).length;
-                  totalZeros += zeros;
+                  jsZeroCount = jsRes.samples.filter((s: any) => s.elapsedMs === 0).length;
+                  totalZeros += jsZeroCount;
                   jsCount = jsRes.samples.length;
               }
               if (wasmRes.success) {
-                  const zeros = wasmRes.samples.filter((s: any) => s.elapsedMs === 0).length;
-                  totalZeros += zeros;
+                  wasmZeroCount = wasmRes.samples.filter((s: any) => s.elapsedMs === 0).length;
+                  totalZeros += wasmZeroCount;
                   wasmCount = wasmRes.samples.length;
               }
 
@@ -69,6 +71,8 @@ export default function PilotTestRunner() {
                 wasmMedian: wasmRes.success ? wasmRes.stats.median : null,
                 jsMeasurementCount: jsCount,
                 wasmMeasurementCount: wasmCount,
+                jsZeroCount,
+                wasmZeroCount,
                 totalZeros
               });
             }
@@ -78,9 +82,9 @@ export default function PilotTestRunner() {
         // 2. Option A: Counterbalanced mode order (Engineering test)
         setStatus('Running Option A PoC');
         const optionAResults: any[] = [];
-        const wl = workloads[0]; // Matrix 150
-        const inputArgs = wl.gen(wl.size);
-        const config = { warmupIterations: 5, measurementIterations: 30 };
+        const wl0 = workloads[0]; // Matrix 150
+        const inputArgs0 = wl0.gen(wl0.size);
+        const config0 = { warmupIterations: 5, measurementIterations: 30 };
         
         // Import adaptive components dynamically to avoid top-level issues
         const { analyzeWorkload } = await import('@/core/selection/analyzer');
@@ -104,13 +108,13 @@ export default function PilotTestRunner() {
             let error: string | null = null;
 
             if (mode === 'js') {
-                res = await runBenchmark(() => (wl.jsRun as any)(...inputArgs), null, config);
+                res = await runBenchmark(() => (wl0.jsRun as any)(...inputArgs0), null, config0);
             } else if (mode === 'wasm') {
-                res = await runBenchmark(() => (wl.wasmRun as any)(...inputArgs), null, config);
+                res = await runBenchmark(() => (wl0.wasmRun as any)(...inputArgs0), null, config0);
             } else if (mode === 'adaptive') {
                 res = await runBenchmark(async () => {
                     const startOv = performance.now();
-                    const profile = analyzeWorkload('matrix', wl.size);
+                    const profile = analyzeWorkload('matrix', wl0.size);
                     const selected = selectRuntime(profile, uiPolicyFixture);
                     const endOv = performance.now();
                     if (!overhead) {
@@ -118,11 +122,11 @@ export default function PilotTestRunner() {
                         selection = selected;
                     }
                     if (selected === 'wasm') {
-                        return (wl.wasmRun as any)(...inputArgs);
+                        return (wl0.wasmRun as any)(...inputArgs0);
                     } else {
-                        return (wl.jsRun as any)(...inputArgs);
+                        return (wl0.jsRun as any)(...inputArgs0);
                     }
-                }, null, config);
+                }, null, config0);
             }
 
             repRes.results[mode] = {
@@ -146,7 +150,9 @@ export default function PilotTestRunner() {
     async function runOptionB(mode: string) {
         setStatus(`Running Option B mode: ${mode}`);
         try {
-            await initWasm();
+            if (mode === 'wasm') {
+                await initWasm();
+            }
             const wl = { name: 'matrix', size: 150, jsRun: multiplyMatricesJS, wasmRun: multiplyMatricesWasm, gen: (size: number) => [generateDeterministicMatrix(size, 0), generateDeterministicMatrix(size, 1), size] };
             const inputArgs = wl.gen(wl.size);
             const config = { warmupIterations: 5, measurementIterations: 30 };
@@ -158,6 +164,11 @@ export default function PilotTestRunner() {
                 res = await runBenchmark(() => (wl.wasmRun as any)(...inputArgs), null, config);
             }
 
+            let zeroCount = 0;
+            if (res && res.success) {
+                zeroCount = res.samples.filter((s: any) => s.elapsedMs === 0).length;
+            }
+
             setResults({ 
                 workload: wl.name,
                 size: wl.size,
@@ -167,6 +178,7 @@ export default function PilotTestRunner() {
                 success: res.success,
                 median: res.success ? res.stats.median : null,
                 sampleCount: res.success ? res.samples.length : 0,
+                zeroCount,
                 error: !res.success ? res.error.toString() : null
             });
             setStatus('OptionB_Complete');

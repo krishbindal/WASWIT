@@ -8,7 +8,7 @@
 The objective of this pilot is to determine whether the locked Phase 5 research protocol is operationally feasible on the current development machine/browser environment. It answers engineering questions regarding computational practicality, warmup stability, iteration limits, and acquisition architecture, strictly without drawing any statistical or performance conclusions.
 
 ## B. Environment
-- **Git Commit SHA**: `50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2` (prior to pilot artifacts)
+- **Git Commit SHA**: `2ba2d97bf44e90df602ec4612444c7a0f0e0f3ba` (prior to pilot artifacts)
 - **Node**: v24.11.1 | **npm**: 11.6.2 | **Rustc**: 1.98.1 | **Cargo**: 1.98.1 | **wasm-pack**: 0.15.0
 - **Browser**: Google Chrome (via Playwright)
 - **OS**: Windows
@@ -16,7 +16,7 @@ The objective of this pilot is to determine whether the locked Phase 5 research 
 - **Device Memory**: Unknown/Unavailable
 - **crossOriginIsolated**: false (default local server)
 - **performance.now Availability**: Confirmed
-- **Timestamp**: 2026-09-29T21:18:00+05:30
+- **Timestamp**: 2026-09-29T17:03:49.789Z
 
 ## C. Build Verification
 Before execution, build integrity was successfully verified using:
@@ -61,7 +61,7 @@ All combinations executed safely without triggering browser unresponsiveness.
 ## F. Zero-Timing Frequency
 
 ### ACTUALLY EXECUTED
-- **SHA-256 10000**: 134 total zero-samples across all configurations.
+- **SHA-256 10000**: 149 total zero-samples across all configurations.
 - **Merge Sort 3000**: 0 total zero-samples (contrary to previous assumptions).
 
 ### ENGINEERING INFERENCE
@@ -73,8 +73,9 @@ Treat the smallest grid sizes (e.g., SHA-256 1000, 2500) as heavily **timer-reso
 ## G. Ordering-Strategy Proof-of-Concept
 
 ### ACTUALLY EXECUTED
-- **Option A (Counterbalanced Order)**: Executed a localized loop traversing all three modes using a deterministic fixture: `[JS -> Wasm -> Adaptive]`, `[Wasm -> Adaptive -> JS]`, `[Adaptive -> JS -> Wasm]`. Recorded median, overhead, and selection dynamically without modifying the core.
-- **Option B (Separate Contexts)**: Executed a Playwright script launching fresh `browser.newContext()` for JS, extracting measurements, closing it, and then launching a fresh context for Wasm. Also executed 10 independent contexts back-to-back to prove N=10 orchestration overhead is trivial.
+- **Option A (Counterbalanced Order)**: Executed a localized loop traversing all three modes using a deterministic fixture: `[JS -> Wasm -> Adaptive]`, `[Wasm -> Adaptive -> JS]`, `[Adaptive -> JS -> Wasm]`. Recorded median, overhead, and selection dynamically without modifying the core. Option A Adaptive timing is an engineering POC end-to-end measurement and is not used as the certified Phase 4B Adaptive elapsedMs metric.
+- **Option B (Separate Contexts)**: Executed a Playwright script launching fresh `browser.newContext()` for JS (without initializing Wasm), extracting measurements, closing it, and then launching a fresh context for Wasm.
+- **N=10 Orchestration**: N=10 fresh-context orchestration completed successfully. 10 independent contexts were launched back-to-back, with each context fully recording success, median, sample counts, and errors to prove N=10 orchestration overhead is trivial.
 
 ### ENGINEERING INFERENCE
 Option B reduces coupling between measurements caused by shared browser state (e.g. V8 tiering or garbage collection). It does not eliminate machine-level thermal or operating-system scheduling effects.
