@@ -30,10 +30,10 @@ Exactly three workloads are evaluated. Workload implementations remain unmodifie
 1. **Matrix Multiplication**
    - **Characteristic**: Nested iterative math, linear memory traversal.
    - **Generator**: Deterministic cell-by-cell generation derived from input index and a stable offset.
-   - **JS Implementation**: `Float64Array` backed 1D iteration.
-   - **Wasm Implementation**: Rust `Vec<f64>` backed 1D iteration.
-   - **Output Parity**: Identical `Float64Array` memory layout.
-   - **JS↔Wasm Boundary**: Copies typed array data into Wasm memory and copies results back.
+   - **JS Implementation**: `Float32Array` backed flat row-major N x N storage.
+   - **Wasm Implementation**: Rust `Vec<f32>` backed flat row-major N x N storage.
+   - **Output Parity**: Identical `Float32Array` memory layout.
+   - **JS↔Wasm Boundary**: Copies typed-array data into Wasm memory and returns copied result data.
 
 2. **Merge Sort**
    - **Characteristic**: Recursive logic, deterministic array partitioning, frequent allocations.
@@ -94,7 +94,7 @@ The certified Phase 4B definition remains in effect:
 > `elapsedMs` measures the wall-clock duration from immediately before invocation of the selected runtime workload operation until the resulting operation returns, excluding deterministic input generation and input preparation.
 
 **For WebAssembly:**
-Adapter/binding overhead remains included. TypedArray data movement involved in the selected invocation remains included unless separately instrumented. No claims of "raw Rust-only" or "algorithm-only time" are made. `performance.now()` is the primary timing clock. Its precision is subject to browser privacy/security coarsening, which is documented and accounted for via median aggregation.
+Adapter/binding overhead remains included. TypedArray data movement involved in the selected invocation remains included unless separately instrumented. No claims of "raw Rust-only" or "algorithm-only time" are made. `performance.now()` provides a monotonic high-resolution timestamp. Actual effective precision is subject to browser security/privacy behavior which can coarsen timing precision. Therefore, the actual runtime environment and `crossOriginIsolated` state must be recorded. Median aggregation reduces sensitivity to individual timing spikes, but timer precision remains a fundamental measurement limitation.
 
 ## H. Warmup Protocol
 
@@ -122,9 +122,12 @@ Fixed execution order (Mode A -> Mode B -> Mode C) could introduce systematic bi
 
 **Chosen Strategy:**
 To preserve Phase 4B certification without modifying the evaluation engine, execution ordering bias will be handled at the **research orchestration layer**:
-- Independent evaluation runs will be executed in completely separated, refreshed browser sessions.
-- Where methodological review deems necessary, separate calibration instances or independent batches per execution mode can be captured outside the shared loop.
-- The precise solution preserves identical workload inputs, avoids duplicating benchmark logic, and leaves a clear audit trail.
+- The Phase 4B validation engine remains untouched and retains its certified A -> B -> C loop.
+- Phase 5 research acquisition must use a dedicated orchestration/acquisition layer.
+- That layer must obtain mode-specific measurements without relying on a single fixed A -> B -> C sequence as the only research evidence.
+- Mode order must be counterbalanced across independent acquisition runs OR each mode must be acquired in separate fresh browser sessions/contexts using the same frozen policy and identical workload-generation specification.
+- The exact implementation will be designed in Phase 5B and must preserve timing semantics and provenance.
+- No final data may be collected until the acquisition strategy is frozen.
 
 ## K. Experimental Grid Design
 
@@ -148,9 +151,17 @@ The pilot phase will validate the following proposed (but non-final) structures 
 - Adaptive vs JS / Wasm (RQ3)
 
 **Methods**:
-Because timing data is rarely normally distributed due to GC spikes, robust non-parametric or distribution-aware methods (e.g., Mann-Whitney U test, Hodges-Lehmann estimator for effect size) will be prioritized. Confidence intervals will be derived via bootstrapping.
+The analysis hierarchy is defined as follows:
+- Individual timing iterations are repeated observations within a case/run.
+- The independent experimental replicate is the primary independent unit.
+- For each workload/input-size/mode, measured iterations are summarized within each replicate.
+- Comparisons between JS/Wasm/Adaptive should be performed on matched replicate-level observations for the same workload and input size.
 
-No statistical test will be chosen post-hoc. Significance thresholds (typically $\alpha=0.05$) will be strictly defined in the derived Jupyter analysis notebooks.
+Because timing data is rarely normally distributed, use paired non-parametric analysis for paired comparisons (e.g., Wilcoxon signed-rank test or an explicitly defined paired permutation test). Mann-Whitney U may only be used where observations are genuinely independent and that assumption is explicitly justified. 
+
+Bootstrap confidence intervals must resample independent replicates, not pretend every timing iteration is independent.
+
+No statistical test will be chosen after looking at final results. A fixed significance level of $\alpha=0.05$ is defined, unless there is a documented methodological reason to choose another threshold. Multiple hypothesis testing across workloads and input sizes will require a stated correction (e.g., Bonferroni) or a clearly defined family-wise analysis strategy. This strategy must be enforced during analysis.
 
 ## M. Practical Efficiency Metric
 

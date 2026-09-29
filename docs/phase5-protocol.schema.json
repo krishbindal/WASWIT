@@ -6,6 +6,8 @@
   "type": "object",
   "required": [
     "experimentRunId",
+    "protocolVersion",
+    "gitCommitSha",
     "config",
     "environmentMetadata",
     "policyVersion",
@@ -15,20 +17,29 @@
     "status"
   ],
   "properties": {
-    "experimentRunId": {
-      "type": "string"
-    },
+    "experimentRunId": { "type": "string" },
+    "protocolVersion": { "type": "string" },
+    "gitCommitSha": { "type": "string" },
     "config": {
       "type": "object",
       "required": ["workloadId", "evaluationGridSizes", "warmupIterations", "measurementIterations"],
       "properties": {
-        "workloadId": { "type": "string" },
+        "workloadId": { 
+          "type": "string",
+          "enum": ["matrix", "sort", "sha256"]
+        },
         "evaluationGridSizes": {
           "type": "array",
           "items": { "type": "number" }
         },
-        "warmupIterations": { "type": "number" },
-        "measurementIterations": { "type": "number" },
+        "warmupIterations": { 
+          "type": "number",
+          "minimum": 1
+        },
+        "measurementIterations": { 
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
         "generationParams": {
           "type": "object",
           "properties": {
@@ -40,17 +51,35 @@
     },
     "environmentMetadata": {
       "type": "object",
+      "required": [
+        "browser",
+        "browserVersion",
+        "browserEngine",
+        "operatingSystem",
+        "logicalProcessorCount",
+        "deviceMemory",
+        "crossOriginIsolated",
+        "wasmBuildVersion",
+        "wasmCompilerVersion",
+        "timestamp"
+      ],
+      "properties": {
+        "browser": { "type": "string" },
+        "browserVersion": { "type": "string" },
+        "browserEngine": { "type": "string" },
+        "operatingSystem": { "type": "string" },
+        "logicalProcessorCount": { "type": ["number", "string"] },
+        "deviceMemory": { "type": ["number", "string"] },
+        "crossOriginIsolated": { "type": ["boolean", "string"] },
+        "wasmBuildVersion": { "type": "string" },
+        "wasmCompilerVersion": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
       "additionalProperties": true
     },
-    "policyVersion": {
-      "type": ["string", "null"]
-    },
-    "policyDerivationRule": {
-      "type": ["string", "null"]
-    },
-    "calibrationTimestamp": {
-      "type": ["string", "null"]
-    },
+    "policyVersion": { "type": ["string", "null"] },
+    "policyDerivationRule": { "type": ["string", "null"] },
+    "calibrationTimestamp": { "type": ["string", "null"] },
     "cases": {
       "type": "array",
       "items": {
@@ -69,8 +98,14 @@
         ],
         "properties": {
           "evaluationCaseId": { "type": "string" },
-          "workloadId": { "type": "string" },
-          "inputSize": { "type": "number" },
+          "workloadId": { 
+            "type": "string",
+            "enum": ["matrix", "sort", "sha256"]
+          },
+          "inputSize": { 
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
           "generationSpec": {
             "type": "object",
             "required": ["generatorId"],
@@ -95,16 +130,17 @@
       "type": "string",
       "enum": ["Idle", "Preparing", "Running", "Completed", "CompletedWithFailures", "Failed"]
     },
-    "error": {
-      "type": "string"
-    }
+    "error": { "type": "string" }
   },
   "$defs": {
     "trial": {
       "type": "object",
       "required": ["trialIndex", "isWarmup", "executionMode", "timestamp"],
       "properties": {
-        "trialIndex": { "type": "number" },
+        "trialIndex": { 
+          "type": "integer",
+          "minimum": 0
+        },
         "isWarmup": { "type": "boolean" },
         "executionMode": {
           "type": "string",
