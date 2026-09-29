@@ -150,7 +150,7 @@ export default function PilotTestRunner() {
     async function runOptionB(mode: string) {
         setStatus(`Running Option B mode: ${mode}`);
         try {
-            if (mode === 'wasm') {
+            if (mode === 'wasm' || mode === 'adaptive') {
                 await initWasm();
             }
             const wl = { name: 'matrix', size: 150, jsRun: multiplyMatricesJS, wasmRun: multiplyMatricesWasm, gen: (size: number) => [generateDeterministicMatrix(size, 0), generateDeterministicMatrix(size, 1), size] };
@@ -158,10 +158,33 @@ export default function PilotTestRunner() {
             const config = { warmupIterations: 5, measurementIterations: 30 };
             
             let res: any;
+            let selection: string | null = null;
+            let overhead: number | null = null;
+
             if (mode === 'js') {
                 res = await runBenchmark(() => (wl.jsRun as any)(...inputArgs), null, config);
             } else if (mode === 'wasm') {
                 res = await runBenchmark(() => (wl.wasmRun as any)(...inputArgs), null, config);
+            } else if (mode === 'adaptive') {
+                const { analyzeWorkload } = await import('@/core/selection/analyzer');
+                const { selectRuntime } = await import('@/core/selection/selector');
+                const { uiPolicyFixture } = await import('@/core/fixtures/policy');
+
+                res = await runBenchmark(async () => {
+                    const startOv = performance.now();
+                    const profile = analyzeWorkload('matrix', wl.size);
+                    const selected = selectRuntime(profile, uiPolicyFixture);
+                    const endOv = performance.now();
+                    if (!overhead) {
+                        overhead = endOv - startOv;
+                        selection = selected;
+                    }
+                    if (selected === 'wasm') {
+                        return (wl.wasmRun as any)(...inputArgs);
+                    } else {
+                        return (wl.jsRun as any)(...inputArgs);
+                    }
+                }, null, config);
             }
 
             let zeroCount = 0;
@@ -179,6 +202,8 @@ export default function PilotTestRunner() {
                 median: res.success ? res.stats.median : null,
                 sampleCount: res.success ? res.samples.length : 0,
                 zeroCount,
+                selection,
+                overheadMs: overhead,
                 error: !res.success ? res.error.toString() : null
             });
             setStatus('OptionB_Complete');

@@ -16,7 +16,7 @@ The objective of this pilot is to determine whether the locked Phase 5 research 
 - **Device Memory**: Unknown/Unavailable
 - **crossOriginIsolated**: false (default local server)
 - **performance.now Availability**: Confirmed
-- **Timestamp**: 2026-09-29T17:03:49.789Z
+- **Timestamp**: 2026-09-29T17:10:49.560Z
 
 ## C. Build Verification
 Before execution, build integrity was successfully verified using:
@@ -38,7 +38,7 @@ We executed a small representative set of grid sizes to assess boundaries. All 1
 All other proposed grid points (e.g. Matrix 50, 200, 250, 300; Sort 1000, 2000, 4000, 5000; SHA 1000, 5000, 15000, 20000) were NOT executed in this pilot to keep orchestration fast.
 
 ### ENGINEERING INFERENCE
-Because Matrix 150 completes in <10ms and memory overhead is non-existent at this scale, we infer that Matrix 300 (which is only 4x larger computationally) will safely execute within browser limits without causing UI hangs or OOMs. The same logic applies to the unexecuted upper bounds of Sort and SHA-256.
+Because Matrix 150 completes in <10ms and memory overhead is non-existent at this scale, we infer that Matrix 300 will safely execute within browser limits without causing UI hangs or OOMs. Matrix 300 has 4× the matrix element/storage count of Matrix 150 and approximately 8× the cubic multiplication workload. The same logic applies to the unexecuted upper bounds of Sort and SHA-256.
 
 ### PROVISIONAL RECOMMENDATION
 The proposed final grids remain identical to Phase 5A, but their feasibility is classified strictly as **PROVISIONALLY FEASIBLE**:
@@ -74,11 +74,11 @@ Treat the smallest grid sizes (e.g., SHA-256 1000, 2500) as heavily **timer-reso
 
 ### ACTUALLY EXECUTED
 - **Option A (Counterbalanced Order)**: Executed a localized loop traversing all three modes using a deterministic fixture: `[JS -> Wasm -> Adaptive]`, `[Wasm -> Adaptive -> JS]`, `[Adaptive -> JS -> Wasm]`. Recorded median, overhead, and selection dynamically without modifying the core. Option A Adaptive timing is an engineering POC end-to-end measurement and is not used as the certified Phase 4B Adaptive elapsedMs metric.
-- **Option B (Separate Contexts)**: Executed a Playwright script launching fresh `browser.newContext()` for JS (without initializing Wasm), extracting measurements, closing it, and then launching a fresh context for Wasm.
-- **N=10 Orchestration**: N=10 fresh-context orchestration completed successfully. 10 independent contexts were launched back-to-back, with each context fully recording success, median, sample counts, and errors to prove N=10 orchestration overhead is trivial.
+- **Option B (Separate Contexts)**: The pilot directly demonstrated isolated JS, Wasm, and Adaptive fresh-context execution using a Playwright script launching fresh `browser.newContext()`. JS was executed without initializing Wasm.
+- **N=30 Orchestration**: N=10 fresh JS browser-context orchestration was successfully demonstrated (extended to 30 contexts across JS, Wasm, and Adaptive). This establishes operational feasibility for repeated isolated contexts; it is not evidence of statistical sufficiency and does not by itself constitute 10 complete three-mode research replicates.
 
 ### ENGINEERING INFERENCE
-Option B reduces coupling between measurements caused by shared browser state (e.g. V8 tiering or garbage collection). It does not eliminate machine-level thermal or operating-system scheduling effects.
+Option B reduces coupling between measurements caused by shared browser state (e.g. V8 tiering or garbage collection). It does not isolate or eliminate machine-level thermal or operating-system scheduling effects.
 
 ### PROVISIONAL RECOMMENDATION
 Recommend **Option B**. It provides high orchestration provenance and reproducibility while avoiding fixed A->B->C ordering constraints within a single page lifecycle.
