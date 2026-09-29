@@ -89,3 +89,12 @@
 - Constructed a rigorously immutable Test Policy fixture (`uiPolicyFixture`) to ensure complete immutability mapping down to object scopes.
 - Captured partial evaluation failures organically inside standard payload reporting without fabricating zeroes.
 - Designed precision Dependency Injected Unit Tests accurately isolating Adaptive execution routines directly.
+## Phase 5A: Research Protocol
+**Status:** In Progress / Protocol Lock
+**Goals:**
+- Create the complete empirical research protocol before real benchmark data collection.
+**Key Deliverables:**
+- Formalized Phase 5 research protocol (docs/phase5-research-protocol.md).
+- Defined final evaluation metadata schema (docs/phase5-protocol.schema.json).
+- Explicitly stated that no final empirical data has been collected.
+- Explicitly stated that no performance conclusions have been made.

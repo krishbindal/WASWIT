@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/waswit-phase5-protocol.schema.json",
+  "title": "Phase 5 Evaluation Record",
+  "description": "Schema for a final Phase 5 evaluation run output in the WASWIT project.",
+  "type": "object",
+  "required": [
+    "experimentRunId",
+    "config",
+    "environmentMetadata",
+    "policyVersion",
+    "policyDerivationRule",
+    "calibrationTimestamp",
+    "cases",
+    "status"
+  ],
+  "properties": {
+    "experimentRunId": {
+      "type": "string"
+    },
+    "config": {
+      "type": "object",
+      "required": ["workloadId", "evaluationGridSizes", "warmupIterations", "measurementIterations"],
+      "properties": {
+        "workloadId": { "type": "string" },
+        "evaluationGridSizes": {
+          "type": "array",
+          "items": { "type": "number" }
+        },
+        "warmupIterations": { "type": "number" },
+        "measurementIterations": { "type": "number" },
+        "generationParams": {
+          "type": "object",
+          "properties": {
+            "matrixOffset": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "environmentMetadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "policyVersion": {
+      "type": ["string", "null"]
+    },
+    "policyDerivationRule": {
+      "type": ["string", "null"]
+    },
+    "calibrationTimestamp": {
+      "type": ["string", "null"]
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "evaluationCaseId",
+          "workloadId",
+          "inputSize",
+          "generationSpec",
+          "jsTrials",
+          "wasmTrials",
+          "adaptiveTrials",
+          "jsSummary",
+          "wasmSummary",
+          "adaptiveSummary"
+        ],
+        "properties": {
+          "evaluationCaseId": { "type": "string" },
+          "workloadId": { "type": "string" },
+          "inputSize": { "type": "number" },
+          "generationSpec": {
+            "type": "object",
+            "required": ["generatorId"],
+            "properties": {
+              "generatorId": { "type": "string" },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": { "type": ["number", "string", "boolean"] }
+              }
+            }
+          },
+          "jsTrials": { "type": "array", "items": { "$ref": "#/$defs/trial" } },
+          "wasmTrials": { "type": "array", "items": { "$ref": "#/$defs/trial" } },
+          "adaptiveTrials": { "type": "array", "items": { "$ref": "#/$defs/trial" } },
+          "jsSummary": { "$ref": "#/$defs/summaryOrNull" },
+          "wasmSummary": { "$ref": "#/$defs/summaryOrNull" },
+          "adaptiveSummary": { "$ref": "#/$defs/summaryOrNull" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Idle", "Preparing", "Running", "Completed", "CompletedWithFailures", "Failed"]
+    },
+    "error": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "trial": {
+      "type": "object",
+      "required": ["trialIndex", "isWarmup", "executionMode", "timestamp"],
+      "properties": {
+        "trialIndex": { "type": "number" },
+        "isWarmup": { "type": "boolean" },
+        "executionMode": {
+          "type": "string",
+          "enum": ["javascript", "wasm", "adaptive"]
+        },
+        "selectedRuntime": {
+          "type": "string",
+          "enum": ["javascript", "wasm"]
+        },
+        "selectionOverheadMs": { "type": "number" },
+        "elapsedMs": { "type": "number" },
+        "error": { "type": "string" },
+        "timestamp": { "type": "string" }
+      }
+    },
+    "summaryOrNull": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["count", "min", "max", "mean", "median"],
+          "properties": {
+            "count": { "type": "number" },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "mean": { "type": "number" },
+            "median": { "type": "number" }
+          }
+        }
+      ]
+    }
+  }
+}
