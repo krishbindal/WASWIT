@@ -6,8 +6,8 @@ test.describe('WASWIT Phase 4A Dashboard', () => {
 
     // Verify main headers
     await expect(page.getByRole('heading', { name: 'Research Dashboard' })).toBeVisible();
-    await expect(page.getByText('Phase 3 Certified')).toBeVisible();
-    await expect(page.getByText('Phase 4A UI')).toBeVisible();
+    await expect(page.getByText('Phase 5H Certified')).toBeVisible();
+    await expect(page.getByText('Evidence Locked')).toBeVisible();
 
     // Verify Workload Selector
     await expect(page.getByRole('button', { name: 'Matrix Multiplication' })).toBeVisible();

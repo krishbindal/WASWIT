@@ -59,12 +59,18 @@ export default function Home() {
         if (jsResult2[0] !== 84.0 || wasmResult2[0] !== 84.0) matrixPassed = false;
 
         let jsRejected = false;
-        try { multiplyMatricesJS(a1, b1, 2); } catch { jsRejected = true; }
+        try { multiplyMatricesJS(a1, b1, -3); } catch { jsRejected = true; }
         
         let wasmRejected = false;
-        try { await multiplyMatricesWasm(a1, b1, 2); } catch { wasmRejected = true; }
+        try { await multiplyMatricesWasm(a1, b1, -3); } catch { wasmRejected = true; }
+
+        let jsMismatchRejected = false;
+        try { multiplyMatricesJS(a1, b1, 2); } catch { jsMismatchRejected = true; }
         
-        if (!jsRejected || !wasmRejected) {
+        let wasmMismatchRejected = false;
+        try { await multiplyMatricesWasm(a1, b1, 2); } catch { wasmMismatchRejected = true; }
+        
+        if (!jsRejected || !wasmRejected || !jsMismatchRejected || !wasmMismatchRejected) {
             matrixPassed = false;
         }
         

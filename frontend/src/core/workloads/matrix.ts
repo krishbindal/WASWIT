@@ -14,6 +14,9 @@
  * (note: exact numerical equivalence at large N is not established due to accumulation precision differences).
  */
 export function generateDeterministicMatrix(n: number, offset: number = 0): Float32Array {
+  if (n < 0) {
+    throw new Error('Matrix dimension cannot be negative.');
+  }
   const size = n * n;
   const matrix = new Float32Array(size);
   for (let i = 0; i < size; i++) {
@@ -33,6 +36,9 @@ export function generateDeterministicMatrix(n: number, offset: number = 0): Floa
  * @returns Flat Float32Array representing the result N x N matrix
  */
 export function multiplyMatricesJS(a: Float32Array, b: Float32Array, n: number): Float32Array {
+  if (n < 0) {
+    throw new Error('Matrix dimension cannot be negative.');
+  }
   if (a.length !== n * n || b.length !== n * n) {
     throw new Error('Matrix dimensions do not match the provided N.');
   }

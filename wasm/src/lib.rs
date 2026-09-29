@@ -28,8 +28,11 @@ pub fn multiply_matrices(a: &[f32], b: &[f32], n: usize) -> Result<Vec<f32>, Str
 
 /// WebAssembly boundary wrapper
 #[wasm_bindgen]
-pub fn multiply_matrices_wasm(a: &[f32], b: &[f32], n: usize) -> Result<Vec<f32>, JsValue> {
-    multiply_matrices(a, b, n).map_err(|e| JsValue::from_str(&e))
+pub fn multiply_matrices_wasm(a: &[f32], b: &[f32], n: i32) -> Result<Vec<f32>, JsValue> {
+    if n < 0 {
+        return Err(JsValue::from_str("Matrix dimension cannot be negative."));
+    }
+    multiply_matrices(a, b, n as usize).map_err(|e| JsValue::from_str(&e))
 }
 
 // Add simple Rust-side unit tests to ensure algorithmic correctness
