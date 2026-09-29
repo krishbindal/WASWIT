@@ -1,0 +1,277 @@
+[
+  {
+    "workload": "matrix",
+    "sizes": [
+      {
+        "size": 75,
+        "js": {
+          "mean": 0.6950000077486038,
+          "median": 0.699999988079071
+        },
+        "wasm": {
+          "mean": 0.3599999964237213,
+          "median": 0.3499999940395355
+        },
+        "adaptiveTotal": {
+          "mean": 0.4799999833106995,
+          "median": 0.4999999403953552
+        },
+        "adaptiveOverhead": {
+          "mean": 0.10999999642372131,
+          "median": 0.09999999403953552
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      },
+      {
+        "size": 125,
+        "js": {
+          "mean": 3.1549999922513963,
+          "median": 3.199999988079071
+        },
+        "wasm": {
+          "mean": 1.7049999952316284,
+          "median": 1.7000000029802322
+        },
+        "adaptiveTotal": {
+          "mean": 1.7599999964237214,
+          "median": 1.7999999821186066
+        },
+        "adaptiveOverhead": {
+          "mean": 0.09999999403953552,
+          "median": 0.09999999403953552
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 3
+      },
+      {
+        "size": 175,
+        "js": {
+          "mean": 8.409999993443488,
+          "median": 8.399999976158142
+        },
+        "wasm": {
+          "mean": 4.615000000596046,
+          "median": 4.600000008940697
+        },
+        "adaptiveTotal": {
+          "mean": 4.7650000005960464,
+          "median": 4.799999997019768
+        },
+        "adaptiveOverhead": {
+          "mean": 0.0800000011920929,
+          "median": 0.09999999403953552
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      },
+      {
+        "size": 225,
+        "js": {
+          "mean": 17.534999999403954,
+          "median": 17.649999976158142
+        },
+        "wasm": {
+          "mean": 9.855000004172325,
+          "median": 9.799999982118607
+        },
+        "adaptiveTotal": {
+          "mean": 10.364999991655349,
+          "median": 9.949999988079071
+        },
+        "adaptiveOverhead": {
+          "mean": 0.08999998569488525,
+          "median": 0.09999996423721313
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 3
+      },
+      {
+        "size": 275,
+        "js": {
+          "mean": 31.840000009536745,
+          "median": 31.649999991059303
+        },
+        "wasm": {
+          "mean": 18.22999999821186,
+          "median": 18.174999997019768
+        },
+        "adaptiveTotal": {
+          "mean": 18.119999992847443,
+          "median": 18.174999982118607
+        },
+        "adaptiveOverhead": {
+          "mean": 0.0899999976158142,
+          "median": 0.09999999403953552
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 7
+      }
+    ]
+  },
+  {
+    "workload": "sort",
+    "sizes": [
+      {
+        "size": 1500,
+        "js": {
+          "mean": 0.20999999046325685,
+          "median": 0.19999998807907104
+        },
+        "wasm": {
+          "mean": 0.10000002086162567,
+          "median": 0.10000002384185791
+        },
+        "adaptiveTotal": {
+          "mean": 0.21000001728534698,
+          "median": 0.20000000298023224
+        },
+        "adaptiveOverhead": {
+          "mean": 0.1,
+          "median": 0.09999999403953552
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      },
+      {
+        "size": 2500,
+        "js": {
+          "mean": 0.30000001192092896,
+          "median": 0.30000001192092896
+        },
+        "wasm": {
+          "mean": 0.19999998807907104,
+          "median": 0.19999998807907104
+        },
+        "adaptiveTotal": {
+          "mean": 0.25500000417232516,
+          "median": 0.2749999910593033
+        },
+        "adaptiveOverhead": {
+          "mean": 0.07000001072883606,
+          "median": 0.10000002384185791
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 3
+      },
+      {
+        "size": 3500,
+        "js": {
+          "mean": 0.5000000059604645,
+          "median": 0.5
+        },
+        "wasm": {
+          "mean": 0.24000000357627868,
+          "median": 0.20000004768371582
+        },
+        "adaptiveTotal": {
+          "mean": 0.310000005364418,
+          "median": 0.30000001192092896
+        },
+        "adaptiveOverhead": {
+          "mean": 0.09999998807907104,
+          "median": 0.09999996423721313
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      },
+      {
+        "size": 4500,
+        "js": {
+          "mean": 0.6300000101327896,
+          "median": 0.6000000238418579
+        },
+        "wasm": {
+          "mean": 0.3300000071525574,
+          "median": 0.30000001192092896
+        },
+        "adaptiveTotal": {
+          "mean": 0.41000002026557925,
+          "median": 0.40000003576278687
+        },
+        "adaptiveOverhead": {
+          "mean": 0.06000001430511474,
+          "median": 0.10000002384185791
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      }
+    ]
+  },
+  {
+    "workload": "sha256",
+    "sizes": [
+      {
+        "size": 2500,
+        "js": {
+          "mean": 0.09999997615814209,
+          "median": 0.09999996423721313
+        },
+        "wasm": {
+          "mean": 0.08999998867511749,
+          "median": 0.09999997913837433
+        },
+        "adaptiveTotal": {
+          "mean": 0.154999977350235,
+          "median": 0.1499999463558197
+        },
+        "adaptiveOverhead": {
+          "mean": 0.06000000238418579,
+          "median": 0.04999998211860657
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 4
+      },
+      {
+        "size": 7500,
+        "js": {
+          "mean": 0.22999998331069946,
+          "median": 0.19999998807907104
+        },
+        "wasm": {
+          "mean": 0,
+          "median": 0
+        },
+        "adaptiveTotal": {
+          "mean": 0.0949999898672104,
+          "median": 0.10000002384185791
+        },
+        "adaptiveOverhead": {
+          "mean": 0.07999999523162842,
+          "median": 0.09999996423721313
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 3
+      },
+      {
+        "size": 12500,
+        "js": {
+          "mean": 0.30999999940395356,
+          "median": 0.30000001192092896
+        },
+        "wasm": {
+          "mean": 0.09499997198581696,
+          "median": 0.09999996423721313
+        },
+        "adaptiveTotal": {
+          "mean": 0.1799999713897705,
+          "median": 0.19999998807907104
+        },
+        "adaptiveOverhead": {
+          "mean": 0.09000000357627869,
+          "median": 0.10000002384185791
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 2
+      },
+      {
+        "size": 17500,
+        "js": {
+          "mean": 0.40499999523162844,
+          "median": 0.3999999761581421
+        },
+        "wasm": {
+          "mean": 0.0949999898672104,
+          "median": 0.09999996423721313
+        },
+        "adaptiveTotal": {
+          "mean": 0.19999997019767762,
+          "median": 0.19999995827674866
+        },
+        "adaptiveOverhead": {
+          "mean": 0.09999999403953552,
+          "median": 0.09999996423721313
+        },
+        "adaptiveBeatsOrMatchesStaticCount": 3
+      }
+    ]
+  }
+]
