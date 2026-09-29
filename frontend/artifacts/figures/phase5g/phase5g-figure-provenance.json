@@ -1,0 +1,20 @@
+{
+  "FIGURE1": {
+    "source": "case_level_metrics.json"
+  },
+  "FIGURE2": {
+    "source": "case_level_metrics.json"
+  },
+  "FIGURE3": {
+    "source": "confirmatory_tests.json"
+  },
+  "FIGURE4": {
+    "source": "frozen_policy"
+  },
+  "GENERATION_SCRIPT": "generate-phase5g.py",
+  "ANALYSIS_COMMIT_SHA": "129419e2c231b1c59a05cedb3ff9be62fe27ea98",
+  "SAP_COMMIT_SHA": "06b5aa20dbd43f3dacb2dd096db1c89cca95b530",
+  "RAW_ARTIFACT_SHA256": "e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220",
+  "FROZEN_POLICY_SHA256": "c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9",
+  "TIMESTAMP": "2026-09-30T00:56:18.119411"
+}
