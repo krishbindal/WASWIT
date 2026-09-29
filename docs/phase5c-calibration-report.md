@@ -17,14 +17,15 @@ Data was properly saved to `frontend/artifacts/calibration/final_calibration_<ti
 - **Final calibration collection**: COMPLETE
 - **Expected calibration cases**: 320
 - **Completed calibration cases**: 320
-- **Raw measurement integrity**: PASS
-- **Environment provenance**: PASS
+- **Raw measurement integrity**: PASS (9,600 valid samples verified)
+- **Environment provenance**: PASS (includes browser, memory, logical processors, cargo/rust/node/wasm-pack versions)
 - **Calibration/evaluation separation**: PASS
-- **Pilot contamination**: PASS
+- **Pilot contamination**: PASS (classification explicitly final-calibration)
+- **Source Provenance Git SHA**: PASS
 
 All observations accurately reflect pure elapsedMs timing with input generation/preparation fully excluded. Invalid samples were not modified or zeros fabricated.
 
 ## Artifact Locations
 - **Orchestrator**: `frontend/e2e/calibration.spec.ts`
 - **Runner Route**: `frontend/src/app/calibration-runner/page.tsx`
-- **Artifact**: `frontend/artifacts/calibration/final_calibration_2026-09-29T17-20-53-737Z.json`
+- **Artifact**: `frontend/artifacts/calibration/final_calibration_2026-09-29T17-33-07-945Z.json`
