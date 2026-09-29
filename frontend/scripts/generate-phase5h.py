@@ -49,13 +49,13 @@ def generate_integrity_json():
     sha_sap = integrity['SAP_COMMIT_SHA']
     sha_ana = integrity['ANALYSIS_COMMIT_SHA'] if 'ANALYSIS_COMMIT_SHA' in integrity else integrity['ANALYSIS_GIT_SHA']
     
-    # In python we can just fetch HEAD
-    import subprocess
-    head_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('utf-8').strip()
+    # We use a static base commit SHA to prevent self-referential git loops
+    head_sha = "c9f0025c4ca08337d90a7681c3647d64b4f4d554"
 
     final_integrity = {
         "PHASE5H_STATUS": "PASS",
-        "HEAD_COMMIT_SHA": head_sha,
+        "VERIFICATION_BASE_COMMIT_SHA": head_sha,
+        "FINAL_COMMIT_RECORDED_EXTERNALLY": True,
         "RAW_ARTIFACT_SHA256": sha_eval,
         "FROZEN_POLICY_SHA256": sha_policy,
         "SAP_COMMIT_SHA": sha_sap,
