@@ -1,0 +1,60 @@
+{
+  "pilot": true,
+  "classification": "engineering-only",
+  "data": [
+    {
+      "workload": "matrix",
+      "size": 50,
+      "js": 0.25,
+      "wasm": 0.10000002384185791
+    },
+    {
+      "workload": "matrix",
+      "size": 150,
+      "js": 5,
+      "wasm": 2.800000011920929
+    },
+    {
+      "workload": "matrix",
+      "size": 300,
+      "js": 43.650000005960464,
+      "wasm": 25.44999998807907
+    },
+    {
+      "workload": "sort",
+      "size": 1000,
+      "js": 0.09999999403953552,
+      "wasm": 0.04999998211860657
+    },
+    {
+      "workload": "sort",
+      "size": 3000,
+      "js": 0.3499999940395355,
+      "wasm": 0.19999998807907104
+    },
+    {
+      "workload": "sort",
+      "size": 5000,
+      "js": 0.6000000238418579,
+      "wasm": 0.30000001192092896
+    },
+    {
+      "workload": "sha256",
+      "size": 1000,
+      "js": 0,
+      "wasm": 0
+    },
+    {
+      "workload": "sha256",
+      "size": 10000,
+      "js": 0.09999996423721313,
+      "wasm": 0
+    },
+    {
+      "workload": "sha256",
+      "size": 20000,
+      "js": 0.15000000596046448,
+      "wasm": 0.10000002384185791
+    }
+  ]
+}
