@@ -1,12 +1,20 @@
 # Phase 5D: Frozen Selection Policy Certificate
 
 ## Artifact Provenance
-- **Source Calibration Dataset**: `frontend/artifacts/calibration/final_calibration_2026-09-29T17-33-07-945Z.json`
 - **Calibration Protocol SHA**: `50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2`
-- **Data Acquisition SHA**: `81c76001c68d0387858a78fb46cdfda1dbcc9ee5`
-- **Generated Policy Artifact**: `frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json`
+- **Acquisition Source SHA**: `7e069fa8c4281e52619c34198bda1c6bb72c29d3`
+- **Calibration Dataset Commit**: `81c76001c68d0387858a78fb46cdfda1dbcc9ee5`
+- **CDP Provenance Audit Commit**: `5b9b27081374a2ad29cc677508f5704d812fa95e`
+- **Policy Derivation/Remediation Commit**: `TBD` (Will be assigned upon commit)
+
+## Methodological Clarification
+- Phase 5A established replicate as the independent experimental unit but did not explicitly specify the calibration-point aggregation formula.
+- Before Phase 5E, Phase 5D remediation fixed the calibration-point statistic as the median of the 10 replicate-level medians.
+- Each replicate-level median is computed from its 30 measured iterations.
+- This preserves replicate-level independence for the calibration derivation.
+- The raw 300 measurements per runtime/point remain untouched and retained.
+- The old pooled-300 median was evaluated only as a sensitivity/invariance audit.
 - **Derivation Rule**: `median-crossover-consistent-v2`
-- **Aggregation Strategy**: Cross-replicate pool combination (N=300 samples per calibration point) mapped to a single aggregate median.
 
 ## Derivation Summary
 

@@ -6,10 +6,25 @@ import { SelectionPolicy } from '../src/core/selection/types';
 import { freezePolicy } from '../src/core/selection/policy';
 import { WorkloadId } from '../src/core/types';
 import { BenchmarkStats } from '../src/core/benchmark/types';
+import assert from 'assert';
 
 const artifactDir = path.join(__dirname, '../artifacts/calibration');
-const files = fs.readdirSync(artifactDir).filter(f => f.startsWith('final_calibration_'));
-const data = require(path.join(artifactDir, files[0]));
+const exactArtifactName = 'final_calibration_2026-09-29T17-33-07-945Z.json';
+const data = require(path.join(artifactDir, exactArtifactName));
+
+// Deterministic validation
+assert.strictEqual(data.classification, 'final-calibration');
+assert.strictEqual(data.protocolVersion, 'Phase 5A');
+assert.strictEqual(data.protocolGitSha, '50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2');
+assert.strictEqual(data.acquisitionSourceGitSha, '7e069fa8c4281e52619c34198bda1c6bb72c29d3');
+assert.strictEqual(data.expectedReplicates, 10);
+assert.strictEqual(data.warmups, 5);
+assert.strictEqual(data.measurements, 30);
+assert.strictEqual(data.completedCases, 320);
+assert.strictEqual(data.expectedCases, 320);
+assert.strictEqual(data.integrity, 'PASS');
+assert.strictEqual(data.environment.browserVersion, '138.0.7204.102');
+assert.strictEqual(data.environment.crossOriginIsolated, false);
 
 const GRIDS = {
     matrix: [50, 100, 150, 200, 250, 300],
@@ -27,6 +42,8 @@ const policy: SelectionPolicy = {
     }
 };
 
+let invarianceFailed = false;
+
 for (const wl of Object.keys(GRIDS) as WorkloadId[]) {
     const record: CalibrationRecord = {
         config: {
@@ -43,35 +60,93 @@ for (const wl of Object.keys(GRIDS) as WorkloadId[]) {
         const jsReps = data.data[wl][size.toString()].js;
         const wasmReps = data.data[wl][size.toString()].wasm;
 
-        // Combine all 300 samples across the 10 replicates to form the aggregate stat for the derivation
-        const computeAgg = (reps: any[]): BenchmarkStats => {
+        assert.strictEqual(jsReps.length, 10);
+        assert.strictEqual(wasmReps.length, 10);
+
+        const validateReps = (reps: any[]) => {
+            const seen = new Set();
+            for (const r of reps) {
+                assert.ok(!seen.has(r.replicate));
+                seen.add(r.replicate);
+                assert.ok(r.replicate >= 0 && r.replicate <= 9);
+                assert.strictEqual(r.success, true);
+                assert.strictEqual(r.warmup, 5);
+                assert.strictEqual(r.measurement, 30);
+                assert.strictEqual(r.sampleCount, 30);
+                assert.strictEqual(r.samples.length, 30);
+                
+                let sum = 0;
+                let min = Infinity;
+                let max = -Infinity;
+                const sorted = [];
+                for (const s of r.samples) {
+                    assert.ok(Number.isFinite(s.elapsedMs) && s.elapsedMs >= 0);
+                    sum += s.elapsedMs;
+                    if (s.elapsedMs < min) min = s.elapsedMs;
+                    if (s.elapsedMs > max) max = s.elapsedMs;
+                    sorted.push(s.elapsedMs);
+                }
+                sorted.sort((a,b) => a - b);
+                const calcMean = sum / 30;
+                const calcMedian = (sorted[14] + sorted[15]) / 2;
+                
+                assert.ok(Math.abs(calcMean - r.mean) < 1e-9);
+                assert.ok(Math.abs(calcMedian - r.median) < 1e-9);
+                assert.strictEqual(r.min, min);
+                assert.strictEqual(r.max, max);
+            }
+        };
+
+        validateReps(jsReps);
+        validateReps(wasmReps);
+
+        const computeHierarchical = (reps: any[]): BenchmarkStats => {
+            const medians = reps.map(r => r.median);
+            medians.sort((a,b) => a - b);
+            const sum = medians.reduce((a,b) => a + b, 0);
+            return {
+                min: medians[0],
+                max: medians[medians.length - 1],
+                mean: sum / medians.length,
+                median: (medians[4] + medians[5]) / 2,
+                count: medians.length
+            };
+        };
+
+        const computePooled = (reps: any[]) => {
             const allSamples = [];
             for (const r of reps) {
                 allSamples.push(...r.samples.map((s:any) => s.elapsedMs));
             }
             allSamples.sort((a,b) => a - b);
-            const sum = allSamples.reduce((a,b) => a+b, 0);
-            return {
-                min: allSamples[0],
-                max: allSamples[allSamples.length-1],
-                mean: sum / allSamples.length,
-                median: (allSamples[149] + allSamples[150]) / 2,
-                count: allSamples.length
-            };
+            return (allSamples[149] + allSamples[150]) / 2;
         };
 
-        const jsStats = computeAgg(jsReps);
-        const wasmStats = computeAgg(wasmReps);
+        const jsHierarchical = computeHierarchical(jsReps);
+        const wasmHierarchical = computeHierarchical(wasmReps);
 
-        let pref: 'javascript' | 'wasm' | 'tie' = 'tie';
-        if (jsStats.median < wasmStats.median) pref = 'javascript';
-        else if (wasmStats.median < jsStats.median) pref = 'wasm';
+        const jsPooledMedian = computePooled(jsReps);
+        const wasmPooledMedian = computePooled(wasmReps);
+
+        let prefHierarchical: 'javascript' | 'wasm' | 'tie' = 'tie';
+        if (jsHierarchical.median < wasmHierarchical.median) prefHierarchical = 'javascript';
+        else if (wasmHierarchical.median < jsHierarchical.median) prefHierarchical = 'wasm';
+
+        let prefPooled: 'javascript' | 'wasm' | 'tie' = 'tie';
+        if (jsPooledMedian < wasmPooledMedian) prefPooled = 'javascript';
+        else if (wasmPooledMedian < jsPooledMedian) prefPooled = 'wasm';
+
+        if (prefHierarchical !== prefPooled) {
+            console.error(`INVARIANCE FAILED at ${wl} size ${size}`);
+            console.error(`Pooled pref: ${prefPooled}, Hierarchical pref: ${prefHierarchical}`);
+            invarianceFailed = true;
+        }
 
         record.results.push({
             inputSize: size,
-            jsStats,
-            wasmStats,
-            preferredRuntime: pref
+            jsStats: jsHierarchical,
+            wasmStats: wasmHierarchical,
+            preferredRuntime: prefHierarchical
         });
     }
 
@@ -79,11 +154,28 @@ for (const wl of Object.keys(GRIDS) as WorkloadId[]) {
     policy.workloads[wl] = wp;
 }
 
-const frozen = freezePolicy(policy);
-const outDir = path.join(__dirname, '../artifacts/policy');
-if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-const outPath = path.join(outDir, `frozen_policy_${data.timestamp.replace(/[:.]/g, '-')}.json`);
-fs.writeFileSync(outPath, JSON.stringify(frozen, null, 2));
+if (invarianceFailed) {
+    console.error("Stopping due to invariance failure.");
+    process.exit(1);
+}
 
-console.log("FROZEN_POLICY_GENERATED=" + outPath);
-console.log(JSON.stringify(frozen, null, 2));
+const frozen = freezePolicy(policy);
+const outPath = path.join(__dirname, '../artifacts/policy', `frozen_policy_2026-09-29T17-33-07-945Z.json`);
+
+const existing = fs.readFileSync(outPath, 'utf8');
+if (existing !== JSON.stringify(frozen, null, 2)) {
+    console.error("FROZEN POLICY DIFFERS FROM COMMITTED ARTIFACT.");
+    process.exit(1);
+}
+
+const NEW_COMMIT_SHA = process.env.COMMIT_SHA || 'TBD';
+
+console.log("PHASE5D_POLICY_DERIVATION=PASS");
+console.log(`SOURCE_ARTIFACT=${exactArtifactName}`);
+console.log(`PROTOCOL_SHA=50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2`);
+console.log(`ACQUISITION_SOURCE_SHA=7e069fa8c4281e52619c34198bda1c6bb72c29d3`);
+console.log(`DATASET_COMMIT_SHA=81c76001c68d0387858a78fb46cdfda1dbcc9ee5`);
+console.log(`CDP_AUDIT_COMMIT_SHA=5b9b27081374a2ad29cc677508f5704d812fa95e`);
+console.log(`AGGREGATION=median_of_10_replicate_medians`);
+console.log("POLICY_INVARIANCE=PASS");
+console.log(`POLICY_ARTIFACT=${outPath}`);
