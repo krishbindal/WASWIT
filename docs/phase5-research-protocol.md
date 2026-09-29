@@ -161,7 +161,7 @@ Because timing data is rarely normally distributed, use paired non-parametric an
 
 Bootstrap confidence intervals must resample independent replicates, not pretend every timing iteration is independent.
 
-No statistical test will be chosen after looking at final results. A fixed significance level of $\alpha=0.05$ is defined, unless there is a documented methodological reason to choose another threshold. Multiple hypothesis testing across workloads and input sizes will require a stated correction (e.g., Bonferroni) or a clearly defined family-wise analysis strategy. This strategy must be enforced during analysis.
+No statistical test will be chosen after looking at final results. The significance level is fixed at alpha = 0.05 for all confirmatory statistical tests. Multiplicity across the predefined confirmatory comparison family will be controlled using the Holm–Bonferroni step-down procedure at family-wise alpha = 0.05. The confirmatory family is defined as the predefined primary pairwise comparisons established before data analysis. Any analyses outside the predefined confirmatory comparison family are exploratory and will be explicitly labelled as such; they will not be presented as confirmatory hypothesis tests.
 
 ## M. Practical Efficiency Metric
 
