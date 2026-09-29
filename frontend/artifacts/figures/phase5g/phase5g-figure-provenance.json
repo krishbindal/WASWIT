@@ -1,20 +1,24 @@
 {
   "FIGURE1": {
-    "source": "case_level_metrics.json"
+    "source": "frontend/artifacts/analysis/phase5f/case_level_metrics.json",
+    "source_sha": "e6e88395ee65ed9ad3566a1bff6cf9f0352df392"
   },
   "FIGURE2": {
-    "source": "case_level_metrics.json"
+    "source": "frontend/artifacts/analysis/phase5f/case_level_metrics.json",
+    "source_sha": "e6e88395ee65ed9ad3566a1bff6cf9f0352df392"
   },
   "FIGURE3": {
-    "source": "confirmatory_tests.json"
+    "source": "frontend/artifacts/analysis/phase5f/confirmatory_tests.json",
+    "source_sha": "088f0be23fc56fe6bab3e47d54c288ab6b0c7e53"
   },
   "FIGURE4": {
-    "source": "frozen_policy"
+    "source": "frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json",
+    "source_sha": "880e4d390badb9bbda8aa13e025844c47fd68197"
   },
   "GENERATION_SCRIPT": "generate-phase5g.py",
   "ANALYSIS_COMMIT_SHA": "129419e2c231b1c59a05cedb3ff9be62fe27ea98",
   "SAP_COMMIT_SHA": "06b5aa20dbd43f3dacb2dd096db1c89cca95b530",
   "RAW_ARTIFACT_SHA256": "e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220",
   "FROZEN_POLICY_SHA256": "c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9",
-  "TIMESTAMP": "2026-09-30T00:56:18.119411"
+  "TIMESTAMP": "2026-09-30T01:00:42.283920"
 }

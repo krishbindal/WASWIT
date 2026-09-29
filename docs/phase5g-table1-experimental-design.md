@@ -16,5 +16,5 @@
 **Environment Metadata (from artifacts):**
 - Browser: Chromium (Google Chrome branded)
 - Engine: Blink
-- OS: Windows 11
+- OS: Unknown
 - Device Memory / Processors: (See metadata JSON)

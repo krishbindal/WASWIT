@@ -1,17 +1,20 @@
 {
   "TABLE1": {
-    "source": "phase5f-analysis-integrity.json"
+    "source": "frontend/artifacts/analysis/phase5f/phase5f-analysis-integrity.json",
+    "source_sha": "2a3a6c2fdf71fd250930f722a81b350a4bca982b"
   },
   "TABLE2": {
-    "source": "descriptive_summary.json"
+    "source": "frontend/artifacts/analysis/phase5f/descriptive_summary.json",
+    "source_sha": "9847d70e6372992775590bf07264f6996ffa1f42"
   },
   "TABLE3": {
-    "source": "confirmatory_tests.json"
+    "source": "frontend/artifacts/analysis/phase5f/confirmatory_tests.json",
+    "source_sha": "088f0be23fc56fe6bab3e47d54c288ab6b0c7e53"
   },
   "GENERATION_SCRIPT": "generate-phase5g.py",
   "ANALYSIS_COMMIT_SHA": "129419e2c231b1c59a05cedb3ff9be62fe27ea98",
   "SAP_COMMIT_SHA": "06b5aa20dbd43f3dacb2dd096db1c89cca95b530",
   "RAW_ARTIFACT_SHA256": "e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220",
   "FROZEN_POLICY_SHA256": "c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9",
-  "TIMESTAMP": "2026-09-30T00:56:18.120194"
+  "TIMESTAMP": "2026-09-30T01:00:42.284523"
 }

@@ -29,5 +29,14 @@ All figures are provided in high-resolution PNG and SVG formats inside `frontend
 ## Reproducibility and Provenance
 Generation of these assets was executed deterministically via `frontend/scripts/generate-phase5g.py`. No sampling randomness, statistical bootstrapping, or test computation exists inside the generation phase. All graphs rigidly track `phase5g-figure-provenance.json` and `phase5g-table-provenance.json` respectively.
 
+**Provenance Requirements:**
+- **Captured OS Metadata:** The locked protocol explicitly logs the captured evaluation OS as **Unknown** (do not conflate physical host OS metadata with exact captured Chrome runtime execution strings).
+- **Blob SHA Tracking:** The exact source-level Git blob SHA is explicitly documented for every figure and table in the provenance artifacts.
+- The raw evaluation artifact SHA-256 remains strictly separately tracked.
+- The frozen policy SHA-256 remains strictly separately tracked.
+- The Phase 5F SAP commit SHA remains strictly separately tracked.
+
+Figure generation is deterministic with respect to scientific numerical content; rendering metadata such as generation timestamps may differ between executions.
+
 ## Limitations
 Due to graphic resolution constraints, exact zero metrics (as natively allowed by the locked timing framework) might visually coalesce along x-axes without log-scale transformations; readers are encouraged to consult Table 2 and Table 3 directly for minute millisecond bounds.

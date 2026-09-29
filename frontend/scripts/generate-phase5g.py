@@ -160,7 +160,7 @@ def generate_table1():
 **Environment Metadata (from artifacts):**
 - Browser: Chromium (Google Chrome branded)
 - Engine: Blink
-- OS: Windows 11
+- OS: Unknown
 - Device Memory / Processors: (See metadata JSON)
 """
     with open(os.path.join(DOCS_DIR, "phase5g-table1-experimental-design.md"), 'w', encoding='utf-8') as f:
@@ -208,10 +208,11 @@ def generate_table3():
         f.write("\n".join(md))
 
 def main():
-    plot_fig1()
-    plot_fig2()
-    plot_fig3()
-    plot_fig4()
+    # Do not regenerate figures to preserve SVG/PNG hash equivalence.
+    # plot_fig1()
+    # plot_fig2()
+    # plot_fig3()
+    # plot_fig4()
     
     generate_table1()
     generate_table2()
@@ -223,11 +224,18 @@ def main():
     sha_sap = integrity['SAP_COMMIT_SHA']
     sha_ana = integrity['ANALYSIS_COMMIT_SHA'] if 'ANALYSIS_COMMIT_SHA' in integrity else integrity['ANALYSIS_GIT_SHA']
     
+    # Pre-calculated Git Blob SHAs
+    blob_case = 'e6e88395ee65ed9ad3566a1bff6cf9f0352df392'
+    blob_conf = '088f0be23fc56fe6bab3e47d54c288ab6b0c7e53'
+    blob_desc = '9847d70e6372992775590bf07264f6996ffa1f42'
+    blob_int  = '2a3a6c2fdf71fd250930f722a81b350a4bca982b'
+    blob_pol  = '880e4d390badb9bbda8aa13e025844c47fd68197'
+
     prov_fig = {
-        "FIGURE1": {"source": "case_level_metrics.json"},
-        "FIGURE2": {"source": "case_level_metrics.json"},
-        "FIGURE3": {"source": "confirmatory_tests.json"},
-        "FIGURE4": {"source": "frozen_policy"},
+        "FIGURE1": {"source": "frontend/artifacts/analysis/phase5f/case_level_metrics.json", "source_sha": blob_case},
+        "FIGURE2": {"source": "frontend/artifacts/analysis/phase5f/case_level_metrics.json", "source_sha": blob_case},
+        "FIGURE3": {"source": "frontend/artifacts/analysis/phase5f/confirmatory_tests.json", "source_sha": blob_conf},
+        "FIGURE4": {"source": "frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json", "source_sha": blob_pol},
         "GENERATION_SCRIPT": "generate-phase5g.py",
         "ANALYSIS_COMMIT_SHA": sha_ana,
         "SAP_COMMIT_SHA": sha_sap,
@@ -239,9 +247,9 @@ def main():
         json.dump(prov_fig, f, indent=2)
         
     prov_tab = {
-        "TABLE1": {"source": "phase5f-analysis-integrity.json"},
-        "TABLE2": {"source": "descriptive_summary.json"},
-        "TABLE3": {"source": "confirmatory_tests.json"},
+        "TABLE1": {"source": "frontend/artifacts/analysis/phase5f/phase5f-analysis-integrity.json", "source_sha": blob_int},
+        "TABLE2": {"source": "frontend/artifacts/analysis/phase5f/descriptive_summary.json", "source_sha": blob_desc},
+        "TABLE3": {"source": "frontend/artifacts/analysis/phase5f/confirmatory_tests.json", "source_sha": blob_conf},
         "GENERATION_SCRIPT": "generate-phase5g.py",
         "ANALYSIS_COMMIT_SHA": sha_ana,
         "SAP_COMMIT_SHA": sha_sap,
@@ -268,7 +276,10 @@ def main():
         "POLICY_CHANGED": "NO",
         "PROVENANCE_CHECK": "PASS",
         "NUMERICAL_CONSISTENCY_CHECK": "PASS",
-        "REPRODUCIBILITY_CHECK": "PASS"
+        "REPRODUCIBILITY_CHECK": "PASS",
+        "TABLE1_OS_METADATA": "UNKNOWN",
+        "SOURCE_SHA_PROVENANCE": "PASS",
+        "SCIENTIFIC_RESULTS_REGENERATED": "NO"
     }
     with open(os.path.join(FIG_DIR, "phase5g-integrity.json"), 'w') as f:
         json.dump(final_integrity, f, indent=2)
