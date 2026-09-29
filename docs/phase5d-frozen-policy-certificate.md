@@ -5,7 +5,7 @@
 - **Acquisition Source SHA**: `7e069fa8c4281e52619c34198bda1c6bb72c29d3`
 - **Calibration Dataset Commit**: `81c76001c68d0387858a78fb46cdfda1dbcc9ee5`
 - **CDP Provenance Audit Commit**: `5b9b27081374a2ad29cc677508f5704d812fa95e`
-- **Policy Derivation/Remediation Commit**: `TBD` (Will be assigned upon commit)
+- **Policy Derivation/Remediation Commit**: `8c73b26d7671e6b77ab13988f163b304d21da1a7`
 
 ## Methodological Clarification
 - Phase 5A established replicate as the independent experimental unit but did not explicitly specify the calibration-point aggregation formula.

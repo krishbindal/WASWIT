@@ -64,11 +64,10 @@ for (const wl of Object.keys(GRIDS) as WorkloadId[]) {
         assert.strictEqual(wasmReps.length, 10);
 
         const validateReps = (reps: any[]) => {
-            const seen = new Set();
+            const replicateIds = reps.map(r => r.replicate).sort((a,b) => a - b);
+            assert.deepStrictEqual(replicateIds, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
             for (const r of reps) {
-                assert.ok(!seen.has(r.replicate));
-                seen.add(r.replicate);
-                assert.ok(r.replicate >= 0 && r.replicate <= 9);
                 assert.strictEqual(r.success, true);
                 assert.strictEqual(r.warmup, 5);
                 assert.strictEqual(r.measurement, 30);
