@@ -24,11 +24,15 @@ Data was properly saved to `frontend/artifacts/calibration/final_calibration_<ti
 - **Source Provenance Git SHA**: PASS (`7e069fa8c4281e52619c34198bda1c6bb72c29d3`)
 
 ### Environment Provenance Diagnosis (Phase 5C Metadata Verification)
-An internal inconsistency in the generated artifact's metadata (browserVersion = "138.0.7204.102" vs userAgent = "Chrome/153.0.8010.12") was audited via a strict metadata-only verification script.
-- **Diagnosis**: Playwright executed the local bundled Chromium binary (`ms-playwright\chromium-1243\chrome.exe`), whose true engine version is `138.0.7204.102`.
-- **UserAgent Spoofing**: The `userAgent` string containing "153.0.8010.12" is a known artifact of Playwright's `devices['Desktop Chrome']` preset, which forcibly spoofs the user agent.
-- **OS Fallback**: The operatingSystem was recorded as "Unknown" due to the deprecation of `wmic` on the host Windows environment, but Node's `os` module confirms `Windows_NT 10.0.26200`.
-- **Conclusion**: The actual execution environment (Chromium 138.0.7204.102 on Windows) was successfully and deterministically recorded by `browser.version()`. The existing 17:33 calibration dataset is preserved as perfectly valid without alteration.
+An internal inconsistency in the generated artifact's metadata (browserVersion = "138.0.7204.102" vs userAgent = "Chrome/153.0.8010.12") was audited via a strict metadata-only verification script querying the Chromium CDP (`Browser.getVersion`).
+- **CDP Evidence**: 
+  - `CDP product`: `Chrome/138.0.7204.102`
+  - `CDP jsVersion`: `13.8.500258`
+  - `CDP userAgent`: `HeadlessChrome/138.0.0.0`
+  - `navigator.userAgent` (Page level): `Chrome/153.0.8010.12`
+- **Diagnosis**: Playwright executed its local bundled Chromium binary, whose true engine version is `138.0.7204.102`.
+- **UserAgent Spoofing**: The page-level `userAgent` string containing "153.0.8010.12" is a known artifact of Playwright's `devices['Desktop Chrome']` preset, which forcibly spoofs the user agent inside the browser context while the underlying physical engine remains unchanged.
+- **Conclusion**: The actual execution environment (Chromium 138.0.7204.102 on Windows) was successfully and deterministically recorded. The existing 17:33 calibration dataset accurately reflects the true execution engine and is sealed as perfectly valid without requiring a rerun.
 
 All observations accurately reflect pure elapsedMs timing with input generation/preparation fully excluded. Invalid samples were not modified or zeros fabricated.
 
