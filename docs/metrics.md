@@ -13,7 +13,7 @@
 
 ## 3. Warm-up Methodology
 - **Calibration (Phase 3):** Discards `warmupIterations` before accumulating metric timings to allow JS JIT stabilization and Wasm memory allocation to settle.
-- **Evaluation (Phase 4B):** Explicitly applies a warmed-execution model using identical `warmupIterations` exclusions. Initial sequential executions are tracked as `isWarmup` rather than being improperly classified as true, isolated "cold starts." No cold-start conclusions are made.
+- **Evaluation (Phase 4B):** Phase 4B uses a warmed-execution protocol when `warmupIterations` is positive. The research evaluation configuration used for Phase 5 MUST specify positive warmup iterations. Initial sequential executions are tracked as `isWarmup` rather than being improperly classified as true, isolated "cold starts." No cold-start conclusions are made.
 - Both warmup trials and measured trials use the same pre-prepared deterministic input arrays.
 
 ## 4. Derived & Analytical Metrics

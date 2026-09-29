@@ -1,4 +1,10 @@
-# WASWIT Phase 4B Final Integrity Remediation Report
+# [HISTORICAL] WASWIT Phase 4B Final Integrity Remediation Report
+
+> **NOTE:** This is a HISTORICAL report representing a previous iteration of the Phase 4B remediation. The architecture has evolved since this report was generated.
+> Specifically:
+> - `Object.freeze()` hooks do NOT occur inside `runEvaluation()` (the engine requires an already frozen policy).
+> - Test counts have increased from 117 to over 130 tests.
+> - Timing boundary logic has been updated to prepare deterministic payloads prior to evaluation loop execution.
 
 The methodology flaws inside Phase 4B have been fully addressed to ensure that execution measurements accurately reflect an independent and isolated scientific evaluation. The integrity of the codebase matches the required scientific standards.
 

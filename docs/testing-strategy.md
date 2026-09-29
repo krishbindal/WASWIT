@@ -29,10 +29,10 @@ Integration tests running in a real headless browser.
   - `dashboard.spec.ts`: Validates that empty state UI elements render and function as expected before experimental data collection begins.
   - `evaluation.spec.ts`: End-to-end Phase 4B evaluation runs across all three workloads proving UI orchestration and data export.
 
-## 4. Continuous Integration / Static Auditing (CLI Pipeline)
-Scripts enforce architectural integrity directly via Git checks.
+## 4. Local Verification / CLI Test Pipeline
+Scripts enforce architectural integrity directly via Git checks or local verification.
 - **Goal:** Maintain zero drift between Phase structures.
 - **Coverage:**
   - Banning of `Math.random` usage across the repository.
-  - Banning of the native `Array.prototype.sort` to preserve standard sorting comparisons.
+  - The Merge Sort workload implementation must not use `Array.prototype.sort()`, so the JS/Wasm workload comparison uses an explicit algorithm rather than browser-native sorting. Statistical utilities are allowed to sort timing samples for median calculation.
   - Pre-commit verifications confirming `npm run build:wasm` and `next build` compile successfully.

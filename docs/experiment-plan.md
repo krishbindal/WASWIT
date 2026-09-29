@@ -29,7 +29,7 @@ The goal of this phase is to test the frozen WASWIT engine against the static ba
    - Mode A: Static JavaScript-only
    - Mode B: Static WebAssembly-only
    - Mode C: WASWIT Adaptive
-4. **Measurement Integrity:** We measure Execution Time using explicit warm-up iterations. Evaluation purely represents **warmed execution**. We do *not* label sequential Mode A/B/C trials as equivalent cold starts. No cold-start conclusions are made.
+4. **Measurement Integrity:** Phase 4B uses a warmed-execution protocol when `warmupIterations` is positive. The research evaluation configuration used for Phase 5 MUST specify positive warmup iterations. We do *not* label sequential Mode A/B/C trials as equivalent cold starts. No cold-start conclusions are made.
 5. **Adaptive Constraints:** The adaptive branch (Mode C) dynamically executes *exactly one* selected runtime based solely on the frozen policy.
 
 ## 4. Analysis and Handling of Results
