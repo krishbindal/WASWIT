@@ -81,7 +81,7 @@ function createWorkloadExecutor(workloadId: WorkloadId, size: number, config: Ev
     const offset = config.generationParams?.matrixOffset ?? 0;
     const a = generateDeterministicMatrix(size, offset);
     const b = generateDeterministicMatrix(size, offset + 1);
-    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
+    return async (runtime: RuntimeType) => {
       if (runtime === 'javascript') {
         return multiplyMatricesJS(a, b, size);
       } else {
@@ -90,7 +90,7 @@ function createWorkloadExecutor(workloadId: WorkloadId, size: number, config: Ev
     };
   } else if (workloadId === 'sort') {
     const input = generateSortInput(size);
-    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
+    return async (runtime: RuntimeType) => {
       if (runtime === 'javascript') {
         return mergeSortJS(input);
       } else {
@@ -99,7 +99,7 @@ function createWorkloadExecutor(workloadId: WorkloadId, size: number, config: Ev
     };
   } else if (workloadId === 'sha256') {
     const input = generateSha256Input(size);
-    return async (runtime: RuntimeType, _executionMode: ExecutionMode) => {
+    return async (runtime: RuntimeType) => {
       if (runtime === 'javascript') {
         return sha256JS(input);
       } else {
@@ -114,7 +114,7 @@ export async function* runEvaluation(
   config: EvaluationConfig,
   policy: FrozenSelectionPolicy,
   experimentRunId: string,
-  _testRunner?: (size: number, runtime: RuntimeType, executionMode: ExecutionMode) => Promise<any>
+  _testRunner?: (size: number, runtime: RuntimeType, executionMode: ExecutionMode) => Promise<unknown>
 ): AsyncGenerator<EvaluationRun, EvaluationRun, void> {
   validateEvaluationConfig(config, policy);
 

@@ -105,7 +105,7 @@ describe('Evaluation Engine - Config Validation', () => {
     expect(() => validateEvaluationConfig(sortConfig, policy)).toThrow(/matrixOffset is not supported/);
 
     const shaConfig: EvaluationConfig = { ...baseConfig, workloadId: 'sha256', evaluationGridSizes: [2000], generationParams: { matrixOffset: 5 } };
-    const shaPolicy = { ...policy, workloads: { ...policy.workloads, sha256: { workloadId: 'sha256', rules: [], defaultRuntime: 'wasm', provenance: { gridSizes: [1000], warmupIterations: 3, measurementIterations: 10, timestamp: '2026' } } } as any };
+    const shaPolicy = { ...policy, workloads: { ...policy.workloads, sha256: { workloadId: 'sha256', rules: [], defaultRuntime: 'wasm', provenance: { gridSizes: [1000], warmupIterations: 3, measurementIterations: 10, timestamp: '2026' } } } } as unknown as FrozenSelectionPolicy;
     expect(() => validateEvaluationConfig(shaConfig, shaPolicy)).toThrow(/matrixOffset is not supported/);
   });
 });

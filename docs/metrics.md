@@ -7,7 +7,8 @@
 
 ## 2. Timing Accuracy
 - All execution durations are captured using `performance.now()`. Note that actual timer precision is subject to browser-level side-channel mitigations (e.g. timers are typically coarsened to 1ms-2ms resolution).
-- The `elapsedMs` timing boundary strictly wraps the computational algorithm only.
+- `elapsedMs` measures the wall-clock duration from immediately before invocation of the selected runtime workload operation until the resulting operation returns, excluding deterministic input generation and input preparation.
+- For WebAssembly, adapter/binding/data movement involved in the selected Wasm call are part of the measured invocation unless separately instrumented; we do not claim raw Rust-only timing.
 - Input generation and equivalent cross-runtime representation preparation happen exactly once per evaluation case, entirely outside the measured timing window.
 
 ## 3. Warm-up Methodology

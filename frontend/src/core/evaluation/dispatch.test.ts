@@ -46,8 +46,8 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       return new Float32Array();
     });
 
-    const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner as any);
-    for await (const res of iterator) {}
+    const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner as unknown as (size: number, runtime: string, mode: string) => Promise<unknown>);
+    for await (const _res of iterator) {}
 
     // Verify adaptive strictly executed only JS
     expect(jsSpy).toHaveBeenCalledTimes(1);
@@ -97,8 +97,8 @@ describe('Evaluation Engine - Execution Path Verification', () => {
       return new Float32Array();
     });
 
-    const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner as any);
-    for await (const res of iterator) {}
+    const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner as unknown as (size: number, runtime: string, mode: string) => Promise<unknown>);
+    for await (const _res of iterator) {}
 
     // Verify adaptive strictly executed only Wasm
     expect(wasmSpy).toHaveBeenCalledTimes(1);

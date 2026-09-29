@@ -94,18 +94,18 @@ describe('Evaluation Engine', () => {
     Object.freeze(policy.workloads.sort!.provenance.gridSizes);
 
     const iterator = runEvaluation(config, policy, 'eval-id-123');
-    for await (const _ of iterator) {}
+    for await (const _res of iterator) {}
 
     // Verify structural immutability
     expect(JSON.stringify(policy)).toBe(snapshot);
     
     // Test that JS engine respects the freeze (not testing runEvaluation here, just proving the test policy is rigid)
     expect(() => {
-      (policy as any).version = 'hacked';
+      (policy as { version: string }).version = 'hacked';
     }).toThrow();
     
     expect(() => {
-      (policy.workloads.sort!.rules as any).push({ maxInputSize: 9999, runtime: 'wasm' });
+      (policy.workloads.sort!.rules as unknown[]).push({ maxInputSize: 9999, runtime: 'wasm' });
     }).toThrow();
   });
 
@@ -205,7 +205,7 @@ describe('Evaluation Engine', () => {
       return new Int32Array();
     };
 
-    const iterator = runEvaluation(config, policy, 'eval-fail-test', failingRunner as any);
+    const iterator = runEvaluation(config, policy, 'eval-fail-test', failingRunner as unknown as (size: number, runtime: string, mode: string) => Promise<unknown>);
     const results = [];
     for await (const res of iterator) {
       results.push(res);
@@ -226,7 +226,7 @@ describe('Evaluation Engine', () => {
     
   });
 
-  it('proves input generation occurs strictly outside the timed execution loop', async () => {
+  it('deterministic input generation occurs outside the measured runtime invocation', async () => {
     const config: EvaluationConfig = {
       workloadId: 'matrix',
       evaluationGridSizes: [50],
@@ -259,7 +259,7 @@ describe('Evaluation Engine', () => {
     vi.mocked(matrixMocks.multiplyMatricesJS).mockClear();
     
     const iterator = runEvaluation(config, policy, 'eval-timing-boundary');
-    for await (const res of iterator) {}
+    for await (const _res of iterator) {}
 
     // Input generation occurs exactly twice per case (once for A, once for B), despite 5 total iterations per mode (15 total executions)
     expect(matrixMocks.generateDeterministicMatrix).toHaveBeenCalledTimes(2);

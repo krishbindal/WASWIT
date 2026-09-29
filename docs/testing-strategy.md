@@ -11,6 +11,7 @@ Unit tests operate in a simulated Node.js/JSDOM environment.
   - Proof that the evaluation `engine` maintains immutable snapshots of the `FrozenSelectionPolicy` and blocks configuration overlaps.
   - Direct execution mock validations confirming the exact single-path invocation of Adaptive dispatch without conflating global calls.
   - Independent JS algorithms ensuring baseline deterministic output.
+  - Verification that evaluation timing boundaries isolate runtime invocation exclusively, proving deterministic generation remains outside the measured `elapsedMs`.
   - Statistics module checking for mathematical invariants.
   - Partial failure handling producing `CompletedWithFailures`.
 

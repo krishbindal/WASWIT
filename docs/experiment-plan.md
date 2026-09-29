@@ -24,7 +24,7 @@ After Calibration, the derived boundaries are embedded into an explicit, deeply 
 The goal of this phase is to test the frozen WASWIT engine against the static baselines.
 
 1. **Independent Workloads:** We generate *new* workload instances on explicit evaluation grids that have *zero overlap* with the calibration grids to prevent data contamination.
-2. **Timing Integrity:** Deterministic input generation and equivalent cross-runtime representations are prepared exactly once per evaluation case, entirely outside the measured timing window. Both warmups and measured trials consume these pre-prepared inputs. The `elapsedMs` measurement strictly wraps computational execution only.
+2. **Timing Integrity:** Deterministic input generation and equivalent cross-runtime representations are prepared exactly once per evaluation case, entirely outside the measured timing window. Both warmups and measured trials consume these pre-prepared inputs. `elapsedMs` measures the wall-clock duration from immediately before invocation of the selected runtime workload operation until the resulting operation returns. For WebAssembly, adapter/binding/data movement involved in the selected call are included unless separately instrumented.
 3. **Execution Modes:** The workload batch is executed entirely in:
    - Mode A: Static JavaScript-only
    - Mode B: Static WebAssembly-only

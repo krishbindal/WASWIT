@@ -42,7 +42,7 @@ Result Verification
    A dedicated runner used to perform input sweeps, discover crossovers, and establish thresholds (producing the Selection Policy). This is strictly executed offline and its logic is decoupled from live selection.
 
 7. **Evaluation & Measurement Engine (Phase 4B):** 
-   The evaluation layer operates exclusively on pre-frozen policies and grids disjoint from calibration constraints. It maintains distinct data trails for JS, Wasm, and Adaptive dispatch modes, rigorously extracting summary statistics without artificially inflating results or conflating warmup executions with final metrics.
+   The evaluation layer operates exclusively on pre-frozen policies and grids disjoint from calibration constraints. It prepares inputs deterministically exactly once per case outside the timing window. The `elapsedMs` measurement captures the wall-clock duration of the selected runtime invocation (explicitly including Wasm binding/adapter overhead unless otherwise isolated). It extracts summary statistics without artificially inflating results or conflating warmup executions with final metrics.
 
 8. **Visualization (Future):** 
    Consumes the raw metric data and plots comparative charts. It is entirely decoupled from the measurement process.
