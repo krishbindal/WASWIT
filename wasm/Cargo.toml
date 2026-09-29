@@ -1,7 +1,6 @@
 [package]
 name = "waswit-wasm"
 version = "0.1.0"
-authors = ["WASWIT Research Team"]
 edition = "2021"
 description = "WebAssembly execution layer for WASWIT"
 

@@ -77,3 +77,12 @@ STATISTICAL_TEST_LOCK=FAIL
 MULTIPLICITY_LOCK=PASS
 PSEUDOREPLICATION_AUDIT=PASS
 CALIBRATION_EVALUATION_SEPARATION=PASS
+
+## 17. Chronological Resolution (Post-Audit Remediation)
+This document represents a historical audit at commit `f552a53`. 
+The blockers identified in Section 15 were genuinely resolved BEFORE any data analysis began.
+Immutable evidence of this resolution exists in the repository history:
+- The Statistical Analysis Plan (SAP) was authored to formally define the confirmatory family, RQ3 aggregation rule, and exact permutation test constraints.
+- The SAP was locked into the repository at commit `06b5aa20dbd43f3dacb2dd096db1c89cca95b530` (`docs: lock phase 5f statistical analysis plan`).
+- The actual analysis script execution and the subsequent commit of results (`129419e2c231b1c59a05cedb3ff9be62fe27ea98`) strictly followed this locked SAP.
+Therefore, the analysis remains genuinely pre-specified relative to the execution of the statistical pipeline.

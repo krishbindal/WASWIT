@@ -43,4 +43,10 @@ describe('JavaScript Matrix Multiplication Workload', () => {
     const b = new Float32Array(9); // 3x3
     expect(() => multiplyMatricesJS(a, b, 2)).toThrow();
   });
+
+  it('explicitly rejects negative dimensions', () => {
+    const a = new Float32Array(9);
+    const b = new Float32Array(9);
+    expect(() => multiplyMatricesJS(a, b, -3)).toThrow('Matrix dimension cannot be negative.');
+  });
 });

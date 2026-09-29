@@ -16,6 +16,11 @@ if (!allowedTargets[command]) {
 
 const targetFile = allowedTargets[command];
 
+console.warn('================================================================================');
+console.warn('WARNING: EXECUTING RESEARCH DATA ACQUISITION SUITE');
+console.warn('This will collect evaluation data that forms the scientific record.');
+console.warn('Ensure the environment is completely isolated before proceeding.');
+console.warn('================================================================================');
 console.log(`Starting Research Acquisition: ${command}`);
 console.log(`File: ${targetFile}`);
 
