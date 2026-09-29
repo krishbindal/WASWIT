@@ -1,0 +1,401 @@
+{
+  "pilot": true,
+  "classification": "engineering-only",
+  "timestamp": "2026-09-29T16-46-27-041Z",
+  "protocolGitSha": "50b8cb6cd4154bb1d67521cbf372ca8e7441d5f2",
+  "pilotHarnessGitSha": "5a38044a45d298ab7ecef68942c2e6e711971038",
+  "browser": "Google Chrome",
+  "os": "Windows",
+  "data": {
+    "feasibility": [
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 3,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 6.300000011920929,
+        "wasmMedian": 3.449999988079071,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 0
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 3,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 6.549999982118607,
+        "wasmMedian": 3.299999952316284,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 0
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 3,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 5.600000023841858,
+        "wasmMedian": 3,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 0
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 5,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 4.8499999940395355,
+        "wasmMedian": 2.7000000178813934,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 0
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 5,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 5.5,
+        "wasmMedian": 3,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 0
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "warmup": 5,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 5.5,
+        "wasmMedian": 3,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 3,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.3999999761581421,
+        "wasmMedian": 0.19999998807907104,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 3,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.3999999761581421,
+        "wasmMedian": 0.19999998807907104,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 3,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.40000003576278687,
+        "wasmMedian": 0.20000004768371582,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 5,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.3999999761581421,
+        "wasmMedian": 0.2499999701976776,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 5,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.5,
+        "wasmMedian": 0.30000001192092896,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sort",
+        "size": 3000,
+        "warmup": 5,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.5999999642372131,
+        "wasmMedian": 0.19999998807907104,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 0
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 3,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.09999999403953552,
+        "wasmMedian": 0.09999996423721313,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 6
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 3,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.09999999403953552,
+        "wasmMedian": 0,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 24
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 3,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.09999996423721313,
+        "wasmMedian": 0,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 38
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 5,
+        "measurement": 10,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.09999996423721313,
+        "wasmMedian": 0.04999998211860657,
+        "jsMeasurementCount": 10,
+        "wasmMeasurementCount": 10,
+        "totalZeros": 7
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 5,
+        "measurement": 30,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.10000002384185791,
+        "wasmMedian": 0.09999996423721313,
+        "jsMeasurementCount": 30,
+        "wasmMeasurementCount": 30,
+        "totalZeros": 13
+      },
+      {
+        "workload": "sha256",
+        "size": 10000,
+        "warmup": 5,
+        "measurement": 50,
+        "jsSuccess": true,
+        "wasmSuccess": true,
+        "jsError": null,
+        "wasmError": null,
+        "jsMedian": 0.10000002384185791,
+        "wasmMedian": 0,
+        "jsMeasurementCount": 50,
+        "wasmMeasurementCount": 50,
+        "totalZeros": 39
+      }
+    ],
+    "optionA": [
+      {
+        "order": [
+          "js",
+          "wasm",
+          "adaptive"
+        ],
+        "results": {
+          "js": {
+            "success": true,
+            "median": 10.650000005960464,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          },
+          "wasm": {
+            "success": true,
+            "median": 5.800000011920929,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          },
+          "adaptive": {
+            "success": true,
+            "median": 6,
+            "selection": "wasm",
+            "overheadMs": 0,
+            "error": null
+          }
+        }
+      },
+      {
+        "order": [
+          "wasm",
+          "adaptive",
+          "js"
+        ],
+        "results": {
+          "wasm": {
+            "success": true,
+            "median": 6.199999988079071,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          },
+          "adaptive": {
+            "success": true,
+            "median": 7.049999982118607,
+            "selection": "wasm",
+            "overheadMs": 0,
+            "error": null
+          },
+          "js": {
+            "success": true,
+            "median": 11.599999994039536,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          }
+        }
+      },
+      {
+        "order": [
+          "adaptive",
+          "js",
+          "wasm"
+        ],
+        "results": {
+          "adaptive": {
+            "success": true,
+            "median": 6.5,
+            "selection": "wasm",
+            "overheadMs": 0.10000002384185791,
+            "error": null
+          },
+          "js": {
+            "success": true,
+            "median": 11.400000005960464,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          },
+          "wasm": {
+            "success": true,
+            "median": 5.800000011920929,
+            "selection": null,
+            "overheadMs": null,
+            "error": null
+          }
+        }
+      }
+    ],
+    "optionB": [
+      {
+        "workload": "matrix",
+        "size": 150,
+        "mode": "js",
+        "warmup": 5,
+        "measurement": 30,
+        "success": true,
+        "median": 5.450000017881393,
+        "sampleCount": 30,
+        "error": null
+      },
+      {
+        "workload": "matrix",
+        "size": 150,
+        "mode": "wasm",
+        "warmup": 5,
+        "measurement": 30,
+        "success": true,
+        "median": 3.4000000059604645,
+        "sampleCount": 30,
+        "error": null
+      }
+    ],
+    "n10Success": true,
+    "n10CompletedContexts": 10
+  }
+}

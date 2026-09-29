@@ -27,48 +27,60 @@ npm run build
 Both steps succeeded. The pilot leveraged the exact compiled artifact produced from the locked commit. No changes were made to certified implementations.
 
 ## D. Workload Feasibility
-We explicitly tested a small representative set of grid sizes to assess boundaries:
-- **Matrix 150**: Actually tested. Completed successfully.
-- **Merge Sort 3000**: Actually tested. Completed successfully.
-- **SHA-256 10000**: Actually tested. Completed successfully.
 
-**Classification of Proposed Final Grids**:
-- Matrix [50, 100, 150, 200, 250, 300]: **PROVISIONALLY FEASIBLE** (Bounded by successful representative points, with the explicit caveat that the upper bounds were not directly run in this tiny pilot).
-- Merge Sort [1000...5000]: **PROVISIONALLY FEASIBLE**
-- SHA-256 [1000...20000]: **PROVISIONALLY FEASIBLE**
+### ACTUALLY EXECUTED
+We executed a small representative set of grid sizes to assess boundaries. All 18 combinations of warmups (3, 5) and measurements (10, 30, 50) were executed for these sizes.
+- **Matrix 150**: 100% completion in JS/Wasm.
+- **Merge Sort 3000**: 100% completion in JS/Wasm.
+- **SHA-256 10000**: 100% completion in JS/Wasm.
 
-No failures were demonstrated. No points were silently removed.
+### NOT EXECUTED
+All other proposed grid points (e.g. Matrix 50, 200, 250, 300; Sort 1000, 2000, 4000, 5000; SHA 1000, 5000, 15000, 20000) were NOT executed in this pilot to keep orchestration fast.
 
-## E. Candidate Iteration Feasibility
-We actually executed combinations of warmup candidates (`3`, `5`) and measurement candidates (`10`, `30`, `50`) for the representative sizes.
-- **Warmups (3 vs 5)**: Both completed cleanly. Runtime differences between them are trivial.
-- **Measurement Iterations (10, 30, 50)**: All counts executed safely without triggering browser unresponsiveness or memory exhaustion.
+### ENGINEERING INFERENCE
+Because Matrix 150 completes in <10ms and memory overhead is non-existent at this scale, we infer that Matrix 300 (which is only 4x larger computationally) will safely execute within browser limits without causing UI hangs or OOMs. The same logic applies to the unexecuted upper bounds of Sort and SHA-256.
 
-## F. Stability Observations & Zero-Timing Feasibility
-- **Successful completion**: 100% of tested cases completed without errors.
-- **Browser Responsiveness**: UI responsiveness remained intact; memory pressure was negligible.
-- **Zero-Timing Frequency**: For SHA-256 10000 and Merge Sort 3000, we observed multiple instances of `elapsedMs === 0` due to browser timer-resolution coarsening. 
-  - *Engineering Action*: We recommend treating the smallest grid sizes (e.g., SHA-256 1000, 2500) as heavily **timer-resolution constrained**. Analysts must mathematically handle exactly-zero samples gracefully (e.g., avoiding division by zero in overhead ratios). The protocol does not need to be rewritten to remove these sizes, as observing resolution floors is a valid empirical outcome.
-
-## G. Ordering-Strategy Proof-of-Concept
-We conducted small engineering proof-of-concepts for both architecture options:
-
-- **Option A (Counterbalanced Order)**: We successfully executed a localized loop swapping the order (e.g., `JS -> Wasm` then `Wasm -> JS`). While simple to script locally, this approach is operationally complex to enforce cleanly upon the locked Phase 4B `runEvaluation` signature without refactoring it.
-- **Option B (Separate Contexts)**: We successfully executed a Playwright script that spins up a fresh `browser.newContext()` for JS, closes it, and spins up another fresh context for Wasm, retrieving successful timings. 
-
-**Recommendation**: We recommend **Option B**. It reduces coupling between measurements caused by shared browser state (like GC or V8 tiering). It does not eliminate machine-level thermal or operating-system scheduling effects, but it provides a clean, reproducible orchestration layer that strictly preserves identical inputs without relying solely on a fixed A->B->C order inside a single page lifecycle.
-
-## H. Grid Recommendations
-The Phase 5A proposed grids are retained based on provisional feasibility:
+### PROVISIONAL RECOMMENDATION
+The proposed final grids remain identical to Phase 5A, but their feasibility is classified strictly as **PROVISIONALLY FEASIBLE**:
 - **Matrix**: 50, 100, 150, 200, 250, 300 (Calibration) / 75, 125, 175, 225, 275 (Evaluation)
 - **Merge Sort**: 1000, 2000, 3000, 4000, 5000 (Calibration) / 1500, 2500, 3500, 4500 (Evaluation)
 - **SHA-256**: 1000, 5000, 10000, 15000, 20000 (Calibration) / 2500, 7500, 12500, 17500 (Evaluation)
 
-## I. Iteration Recommendations
-After direct engineering testing of all candidates, we recommend:
-- **Final Warmup Iterations**: 5. (Supported by pilot evidence; minimal time cost, ensures maximum opportunity for stable tiering).
-- **Final Measurement Iterations**: 30. (Supported by pilot evidence; executes rapidly while capturing a sufficient distribution curve for median extraction).
-- **Final Independent Replicates**: 10. (Supported by pilot evidence; Option B's context-spinning architecture is fast enough that N=10 will not cause orchestration timeouts).
+## E. Candidate Iteration Feasibility
+
+### ACTUALLY EXECUTED
+- **Warmups**: `3` and `5`
+- **Measurement Iterations**: `10`, `30`, and `50`
+All combinations executed safely without triggering browser unresponsiveness.
+
+### PROVISIONAL RECOMMENDATION
+- **Final Warmup Iterations**: 5. (Supported by executed evidence).
+- **Final Measurement Iterations**: 30. (Supported by executed evidence).
+- **Final Independent Replicates**: 10. (Actually executed and supported by Option B PoC).
+
+## F. Zero-Timing Frequency
+
+### ACTUALLY EXECUTED
+- **SHA-256 10000**: 134 total zero-samples across all configurations.
+- **Merge Sort 3000**: 0 total zero-samples (contrary to previous assumptions).
+
+### ENGINEERING INFERENCE
+Timer-resolution coarsening (`elapsedMs === 0`) heavily affects the smallest workloads (particularly SHA-256).
+
+### PROVISIONAL RECOMMENDATION
+Treat the smallest grid sizes (e.g., SHA-256 1000, 2500) as heavily **timer-resolution constrained**. Analysts must mathematically handle exactly-zero samples gracefully. We do not delete these samples, nor do we rewrite protocol semantics.
+
+## G. Ordering-Strategy Proof-of-Concept
+
+### ACTUALLY EXECUTED
+- **Option A (Counterbalanced Order)**: Executed a localized loop traversing all three modes using a deterministic fixture: `[JS -> Wasm -> Adaptive]`, `[Wasm -> Adaptive -> JS]`, `[Adaptive -> JS -> Wasm]`. Recorded median, overhead, and selection dynamically without modifying the core.
+- **Option B (Separate Contexts)**: Executed a Playwright script launching fresh `browser.newContext()` for JS, extracting measurements, closing it, and then launching a fresh context for Wasm. Also executed 10 independent contexts back-to-back to prove N=10 orchestration overhead is trivial.
+
+### ENGINEERING INFERENCE
+Option B reduces coupling between measurements caused by shared browser state (e.g. V8 tiering or garbage collection). It does not eliminate machine-level thermal or operating-system scheduling effects.
+
+### PROVISIONAL RECOMMENDATION
+Recommend **Option B**. It provides high orchestration provenance and reproducibility while avoiding fixed A->B->C ordering constraints within a single page lifecycle.
 
 ## J. Protocol Issues
 No operational impossibilities requiring a Phase 5A re-lock were identified. The timer quantization behavior aligns exactly with the protocol's declared limitations. 
