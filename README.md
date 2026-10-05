@@ -32,3 +32,19 @@ The project has successfully concluded its empirical evaluation phase.
 - **NO AI or Machine Learning** is used for runtime selection; it relies on empirically calibrated thresholds.
 - **NO external datasets** are utilized.
 - **NO backend, serverless infrastructure, or database** is implemented.
+## Developer Integration
+WASWIT can be used as a deterministic router for supported workloads using the Developer SDK.
+
+`	ypescript
+import { waswitRun } from './core/sdk';
+
+const result = await waswitRun({
+  workload: 'sort',
+  input: new Int32Array([5, 3, 4, 1, 2])
+});
+console.log(Executed on: );
+`
+**Research vs Developer Mode:**
+- The SDK utilizes the validated **frozen empirical policy** derived from Phase 5 (phase5FrozenPolicy).
+- It applies thresholds deterministically without dynamically re-calibrating or re-benchmarking in production.
+- For interactive exploration, run the local server and visit the /developer Playground.
