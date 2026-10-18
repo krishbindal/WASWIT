@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { waswitRun, waswitPreload } from '../../core/sdk';
+import { WaswitRunResult } from '../../core/sdk/types';
 import { generateSortInput } from '../../core/workloads/sort';
 import { generateSha256Input } from '../../core/workloads/sha256';
 import { generateDeterministicMatrix } from '../../core/workloads/matrix';
@@ -10,7 +11,7 @@ export default function DeveloperPage() {
   const [workload, setWorkload] = useState<'matrix' | 'sort' | 'sha256'>('sort');
   const [inputSize, setInputSize] = useState<number>(5000);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [result, setResult] = useState<unknown>(null);
+  const [result, setResult] = useState<WaswitRunResult<unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleRun = async () => {
@@ -22,7 +23,7 @@ export default function DeveloperPage() {
     await waswitPreload();
 
     try {
-      let res;
+      let res: WaswitRunResult<unknown> | null = null;
       if (workload === 'matrix') {
         const n = Math.floor(inputSize);
         const a = generateDeterministicMatrix(n, 0);
