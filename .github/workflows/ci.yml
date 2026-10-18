@@ -1,0 +1,77 @@
+name: WASWIT CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    name: Test and Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Frozen Phase 5 Research Artifact Hashes
+        run: |
+          RAW_EVAL_HASH=$(sha256sum frontend/artifacts/evaluation/final_evaluation_2026-09-29T18-16-18-546Z.json | awk '{print $1}')
+          FROZEN_POL_HASH=$(sha256sum frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json | awk '{print $1}')
+          
+          EXPECTED_RAW="e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220"
+          EXPECTED_POL="c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9"
+
+          if [ "$RAW_EVAL_HASH" != "$EXPECTED_RAW" ]; then
+            echo "ERROR: Raw evaluation dataset hash mismatch! Expected $EXPECTED_RAW, got $RAW_EVAL_HASH"
+            exit 1
+          fi
+
+          if [ "$FROZEN_POL_HASH" != "$EXPECTED_POL" ]; then
+            echo "ERROR: Frozen policy hash mismatch! Expected $EXPECTED_POL, got $FROZEN_POL_HASH"
+            exit 1
+          fi
+
+          echo "Phase 5 cryptographic hashes verified successfully."
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Run Rust Unit Tests
+        run: cargo test --manifest-path wasm/Cargo.toml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build WebAssembly Package
+        working-directory: frontend
+        run: npm run build:wasm
+
+      - name: Run Frontend Vitest Unit Tests
+        working-directory: frontend
+        run: npx vitest run
+
+      - name: Build Next.js Production App
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install SDK Package Dependencies & Build SDK
+        working-directory: packages/waswit
+        run: |
+          npm ci
+          npm run build
+          npm pack

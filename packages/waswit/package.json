@@ -20,8 +20,10 @@
                             "tsup":  "^8.0.2",
                             "typescript":  "^5.0.0"
                         },
-    "files":  [
-                  "dist",
-                  "README.md"
-              ]
+    "license": "MIT",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ]
 }

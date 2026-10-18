@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 import { phase5FinalPolicyRaw } from '../src/core/selection/frozen-policy';
 
@@ -54,7 +55,8 @@ test.describe('Phase 5E Final Evaluation', () => {
         const nodeVersion = getCmd('node --version');
 
         let browserVersion = 'Unknown';
-        let osInfo = getCmd('wmic os get Caption,Version /value') || 'Unknown';
+        const osVersionStr = typeof os.version === 'function' ? os.version() : os.platform();
+        const osInfo = `${os.type()} ${os.release()} (${osVersionStr}) [${os.arch()}]`;
         
         let logicalProcessorCount: any = 'Unknown';
         let deviceMemory: any = 'Unknown';
