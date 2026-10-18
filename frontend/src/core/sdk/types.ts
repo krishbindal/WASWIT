@@ -1,5 +1,7 @@
 import { WorkloadId, RuntimeType } from '../types';
 
+export type { WorkloadId, RuntimeType };
+
 export type WaswitWorkload = WorkloadId;
 
 export interface MatrixInput {

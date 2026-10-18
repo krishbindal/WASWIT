@@ -117,3 +117,16 @@ export async function waswitRun<T extends WaswitRunOptions>(
 // if they want to exclude lazy-load initialization from their app startup metrics.
 export { initWasm as waswitPreload };
 
+export type {
+  WaswitWorkload,
+  MatrixInput,
+  MatrixOptions,
+  SortOptions,
+  Sha256Options,
+  WaswitRunOptions,
+  WaswitRunResultType,
+  WaswitRunResult,
+  WorkloadId,
+  RuntimeType
+} from './types';
+

@@ -33,7 +33,8 @@ console.log(result.result);  // Int32Array(5) [1, 2, 3, 4, 5]
 console.log(result.executionTimeMs); // Execution time measured in ms
 ```
 
-## Limitations
+## Runtime Environment & Limitations
 
-- **Browser-Oriented**: WASWIT bindings use `import.meta.url` native to Webpack/Vite/ESM bundlers. Direct usage in unbundled Node.js CommonJS environments will require manual polyfilling or ESM execution.
-- **Empirical Policy**: The selection engine uses a frozen policy derived from Blink/Chromium 138. It is not guaranteed universally optimal for all hardware or Node.js environments.
+- **Designed for Browser Bundlers**: WASWIT is designed for modern frontend build tools and bundlers (including Vite, Webpack 5, Next.js, Rollup, and Parcel). The WebAssembly module is loaded via standard asset patterns (`new URL('waswit_wasm_bg.wasm', import.meta.url)`).
+- **Unbundled Node.js Execution Not Supported Out-of-the-Box**: Direct execution in standalone, unbundled Node.js without a bundler is not supported out-of-the-box because Node.js does not support `fetch()` on `file://` URLs in native ESM and does not define `import.meta.url` in unbundled CommonJS. Server-side or standalone Node.js environments require custom Wasm initialization or bundling.
+- **Empirical Policy**: The selection engine utilizes a frozen empirical policy calibrated on Google Chrome (Blink/Chromium 138) on a dedicated host. It is deterministic and threshold-based, but not guaranteed to be universally optimal across all hardware architectures, devices, or non-Chromium browsers.
