@@ -1,0 +1,682 @@
+{
+  "classification": "phase6-statistical-analysis",
+  "timestamp": "2026-10-18T10:53:39.610Z",
+  "grid": [
+    100,
+    250,
+    500,
+    750,
+    900,
+    1000,
+    1100,
+    1250,
+    1500,
+    2000
+  ],
+  "totalConfirmatoryTests": 20,
+  "fwerAlpha": 0.05,
+  "significantCount": 0,
+  "holmStatement": "The specified analysis did not establish statistically significant differences under the multiplicity-adjusted testing procedure.",
+  "overheadStats": {
+    "min": 0,
+    "max": 0.29999999701976776,
+    "median": 0.09999999776482582,
+    "p25": 0.09999999776482582,
+    "p75": 0.10000000149011612,
+    "mean": 0.09199999984353781
+  },
+  "summaryRows": [
+    {
+      "size": 100,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0.09999999776482582,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0.09999999776482582,
+      "adaptiveOverheadMedianMs": 0.09999999962747097,
+      "adaptiveTotalMedianMs": 0.17499999795109034
+    },
+    {
+      "size": 250,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0.04999999888241291,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0.04999999888241291,
+      "adaptiveOverheadMedianMs": 0.09999999776482582,
+      "adaptiveTotalMedianMs": 0.12499999906867743
+    },
+    {
+      "size": 500,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0,
+      "adaptiveOverheadMedianMs": 0.09999999776482582,
+      "adaptiveTotalMedianMs": 0.09999999776482582
+    },
+    {
+      "size": 750,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0,
+      "adaptiveOverheadMedianMs": 0.09999999962747097,
+      "adaptiveTotalMedianMs": 0.09999999962747097
+    },
+    {
+      "size": 900,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0,
+      "adaptiveOverheadMedianMs": 0.10000000149011612,
+      "adaptiveTotalMedianMs": 0.10000000149011612
+    },
+    {
+      "size": 1000,
+      "policySelectedRuntime": "javascript",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0,
+      "adaptiveMedianMs": 0,
+      "adaptiveOverheadMedianMs": 0.09999999776482582,
+      "adaptiveTotalMedianMs": 0.09999999776482582
+    },
+    {
+      "size": 1100,
+      "policySelectedRuntime": "wasm",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0.04999999888241291,
+      "adaptiveMedianMs": 0.04999999888241291,
+      "adaptiveOverheadMedianMs": 0.10000000149011612,
+      "adaptiveTotalMedianMs": 0.14999999664723873
+    },
+    {
+      "size": 1250,
+      "policySelectedRuntime": "wasm",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0.09999999776482582,
+      "adaptiveMedianMs": 0.09999999776482582,
+      "adaptiveOverheadMedianMs": 0.10000000149011612,
+      "adaptiveTotalMedianMs": 0.19999999925494194
+    },
+    {
+      "size": 1500,
+      "policySelectedRuntime": "wasm",
+      "jsMedianMs": 0,
+      "wasmMedianMs": 0.09999999776482582,
+      "adaptiveMedianMs": 0.09999999776482582,
+      "adaptiveOverheadMedianMs": 0.09999999776482582,
+      "adaptiveTotalMedianMs": 0.19999999552965164
+    },
+    {
+      "size": 2000,
+      "policySelectedRuntime": "wasm",
+      "jsMedianMs": 0.09999999776482582,
+      "wasmMedianMs": 0.09999999776482582,
+      "adaptiveMedianMs": 0.09999999776482582,
+      "adaptiveOverheadMedianMs": 0.10000000149011612,
+      "adaptiveTotalMedianMs": 0.19999999925494194
+    }
+  ],
+  "confirmatoryTests": [
+    {
+      "hypothesis": "RQ4",
+      "size": 100,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.04999999888241291,
+        0.10000000149011612,
+        0.04999999888241291,
+        0.05000000260770321,
+        0.10000000149011612,
+        0.04999999888241291,
+        0.15000000037252903
+      ],
+      "medianDiff": 0.07500000018626451,
+      "cliffsDelta": 0.79,
+      "pRaw": 0.03125,
+      "ci": [
+        0.04999999888241291,
+        0.10000000149011612
+      ],
+      "originalIndex": 0,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 100,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.09999999776482582,
+        0.19999999925494194,
+        0.19999999552965164,
+        0.09999999776482582,
+        0.19999999925494194,
+        0.14999999664723873,
+        0.15000000037252903,
+        0.19999999925494194,
+        0.09999999776482582,
+        0.19999999925494194
+      ],
+      "medianDiff": 0.17499999795109034,
+      "cliffsDelta": 1,
+      "pRaw": 0.03125,
+      "ci": [
+        0.09999999776482582,
+        0.19999999925494194
+      ],
+      "originalIndex": 1,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 250,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.14999999850988388,
+        0.14999999664723873,
+        0.10000000149011612,
+        0.25000000186264515,
+        0.10000000149011612,
+        -0.04999999888241291,
+        -0.09999999776482582,
+        0,
+        0.04999999888241291,
+        0
+      ],
+      "medianDiff": 0.07500000018626451,
+      "cliffsDelta": 0.53,
+      "pRaw": 0.0546875,
+      "ci": [
+        -0.024999999441206455,
+        0.14999999664723873
+      ],
+      "originalIndex": 2,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 250,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.1999999973922968,
+        0.14999999664723873,
+        0.10000000149011612,
+        0.25000000186264515,
+        0.15000000037252903,
+        0,
+        0,
+        0.04999999888241291,
+        0.14999999664723873,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.12499999906867743,
+      "cliffsDelta": 0.8,
+      "pRaw": 0.03125,
+      "ci": [
+        0.04999999888241291,
+        0.17499999701976776
+      ],
+      "originalIndex": 3,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 500,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.09999999776482582,
+      "cliffsDelta": 0.8,
+      "pRaw": 0.2890625,
+      "ci": [
+        0.04999999888241291,
+        0.10000000149011612
+      ],
+      "originalIndex": 4,
+      "pHolm": 1,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 500,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.09999999776482582,
+      "cliffsDelta": 0.8,
+      "pRaw": 0.2890625,
+      "ci": [
+        0.04999999888241291,
+        0.10000000149011612
+      ],
+      "originalIndex": 5,
+      "pHolm": 1,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 750,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.09999999962747097,
+      "cliffsDelta": 1,
+      "pRaw": 0.060546875,
+      "ci": [
+        0.09999999776482582,
+        0.10000000149011612
+      ],
+      "originalIndex": 6,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 750,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.09999999962747097,
+      "cliffsDelta": 1,
+      "pRaw": 0.060546875,
+      "ci": [
+        0.09999999776482582,
+        0.10000000149011612
+      ],
+      "originalIndex": 7,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 900,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.09999999776482582,
+        0,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.19999999925494194,
+        0.10000000149011612,
+        0.20000000298023224,
+        0,
+        0
+      ],
+      "medianDiff": 0.10000000149011612,
+      "cliffsDelta": 0.7,
+      "pRaw": 0.03125,
+      "ci": [
+        0,
+        0.15000000037252903
+      ],
+      "originalIndex": 8,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 900,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0,
+        0,
+        0.10000000149011612,
+        0.05000000260770321,
+        0.10000000149011612,
+        0.19999999925494194,
+        0.05000000260770321,
+        0.20000000298023224,
+        0,
+        0
+      ],
+      "medianDiff": 0.05000000260770321,
+      "cliffsDelta": 0.6,
+      "pRaw": 0.03125,
+      "ci": [
+        0,
+        0.15000000037252903
+      ],
+      "originalIndex": 9,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1000,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.09999999776482582,
+      "cliffsDelta": 1,
+      "pRaw": 0.75390625,
+      "ci": [
+        0.09999999776482582,
+        0.10000000149011612
+      ],
+      "originalIndex": 10,
+      "pHolm": 1,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1000,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "javascript",
+      "differences": [
+        0.10000000149011612,
+        0.05000000260770321,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        3.725290298461914e-9,
+        0.09999999776482582,
+        0.04999999888241291,
+        0.10000000149011612,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.09999999776482582,
+      "cliffsDelta": 0.94,
+      "pRaw": 0.125,
+      "ci": [
+        0.05000000260770321,
+        0.09999999962747097
+      ],
+      "originalIndex": 11,
+      "pHolm": 0.875,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1100,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.15000000037252903,
+        0.29999999701976776,
+        0.10000000149011612,
+        0.14999999664723873,
+        0.14999999664723873,
+        0.09999999776482582,
+        0.19999999925494194,
+        0.19999999925494194,
+        0,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.14999999664723873,
+      "cliffsDelta": 0.9,
+      "pRaw": 0.03125,
+      "ci": [
+        0.09999999962747097,
+        0.19999999925494194
+      ],
+      "originalIndex": 12,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1100,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.10000000149011612,
+        0.24999999813735485,
+        0.05000000260770321,
+        0.04999999888241291,
+        0.09999999776482582,
+        0.04999999888241291,
+        0.15000000037252903,
+        0.10000000149011612,
+        -0.04999999888241291,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.09999999962747097,
+      "cliffsDelta": 0.79,
+      "pRaw": 0.03125,
+      "ci": [
+        0.04999999888241291,
+        0.12500000093132257
+      ],
+      "originalIndex": 13,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1250,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.09999999776482582,
+        0.3999999947845936,
+        0.09999999776482582,
+        0.29999999701976776,
+        0.19999999925494194,
+        0.10000000149011612,
+        0.19999999925494194,
+        0.19999999925494194,
+        0.19999999552965164,
+        0.19999999925494194
+      ],
+      "medianDiff": 0.19999999925494194,
+      "cliffsDelta": 1,
+      "pRaw": 0.03125,
+      "ci": [
+        0.10000000149011612,
+        0.24999999813735485
+      ],
+      "originalIndex": 14,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1250,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0,
+        0.29999999701976776,
+        0,
+        0.19999999925494194,
+        0.19999999925494194,
+        3.725290298461914e-9,
+        0.10000000149011612,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.19999999925494194
+      ],
+      "medianDiff": 0.10000000149011612,
+      "cliffsDelta": 0.84,
+      "pRaw": 0.03125,
+      "ci": [
+        3.725290298461914e-9,
+        0.19999999925494194
+      ],
+      "originalIndex": 15,
+      "pHolm": 0.625,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1500,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.19999999552965164,
+        0.19999999552965164,
+        0.19999999552965164,
+        0.19999999552965164,
+        0.19999999925494194,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.19999999925494194,
+        0.19999999552965164,
+        0.19999999552965164
+      ],
+      "medianDiff": 0.19999999552965164,
+      "cliffsDelta": 1,
+      "pRaw": 0.2890625,
+      "ci": [
+        0.14999999664723873,
+        0.1999999973922968
+      ],
+      "originalIndex": 16,
+      "pHolm": 1,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 1500,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.09999999776482582,
+        0.10000000149011612,
+        0,
+        0,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.09999999776482582
+      ],
+      "medianDiff": 0.09999999776482582,
+      "cliffsDelta": 0.8,
+      "pRaw": 0.2890625,
+      "ci": [
+        0.04999999888241291,
+        0.09999999962747097
+      ],
+      "originalIndex": 17,
+      "pHolm": 1,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 2000,
+      "comparison": "Adaptive_vs_JS",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.10000000149011612,
+        0.10000000149011612,
+        0.19999999925494194,
+        0.10000000149011612,
+        0,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.19999999925494194,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.10000000149011612,
+      "cliffsDelta": 0.9,
+      "pRaw": 0.125,
+      "ci": [
+        0.09999999776482582,
+        0.15000000037252903
+      ],
+      "originalIndex": 18,
+      "pHolm": 0.875,
+      "significant": false
+    },
+    {
+      "hypothesis": "RQ4",
+      "size": 2000,
+      "comparison": "Adaptive_vs_Wasm",
+      "policySelectedRuntime": "wasm",
+      "differences": [
+        0.10000000149011612,
+        0.09999999962747097,
+        0.1999999973922968,
+        0.10000000149011612,
+        0,
+        0.09999999776482582,
+        0.10000000149011612,
+        0.09999999776482582,
+        0.1999999973922968,
+        0.10000000149011612
+      ],
+      "medianDiff": 0.10000000149011612,
+      "cliffsDelta": 0.87,
+      "pRaw": 0.03125,
+      "ci": [
+        0.09999999776482582,
+        0.14999999944120646
+      ],
+      "originalIndex": 19,
+      "pHolm": 0.625,
+      "significant": false
+    }
+  ]
+}
