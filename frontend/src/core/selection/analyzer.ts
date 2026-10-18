@@ -25,10 +25,12 @@ export function analyzeWorkload(workloadId: WorkloadId, inputSize: number): Work
       // SHA-256 uses a Uint8Array of length N bytes.
       derivedSize = inputSize;
       break;
-    default:
+    default: {
       // Typescript exhaustive check protection
       const _exhaustiveCheck: never = workloadId;
+      void _exhaustiveCheck;
       throw new Error(`Unknown workloadId: ${workloadId}`);
+    }
   }
 
   return {

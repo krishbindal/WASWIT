@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { deriveWorkloadPolicy, validateCalibrationConfig } from './calibrator';
 import { CalibrationRecord, CalibrationResultPoint } from './types';
-import { BenchmarkStats } from '../benchmark/types';
 
 describe('Calibrator - Validation', () => {
   it('rejects empty grid sizes', () => {
@@ -19,8 +18,6 @@ describe('Calibrator - Validation', () => {
 });
 
 describe('Calibrator - Derivation', () => {
-  const mockStats: BenchmarkStats = { count: 1, min: 1, max: 1, mean: 1, median: 1 };
-
   function makeRecord(prefs: ('javascript'|'wasm'|'tie')[], sizes = [10, 20, 30, 40, 50, 60]): CalibrationRecord {
     const results: CalibrationResultPoint[] = prefs.map((p, i) => {
       let jsMedian = 100;

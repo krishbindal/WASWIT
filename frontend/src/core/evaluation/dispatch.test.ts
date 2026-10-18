@@ -47,7 +47,9 @@ describe('Evaluation Engine - Execution Path Verification', () => {
     });
 
     const iterator = runEvaluation(config, policy, 'eval-path-test', mockRunner as unknown as (size: number, runtime: string, mode: string) => Promise<unknown>);
-    for await (const _res of iterator) {}
+    for await (const _res of iterator) {
+      void _res;
+    }
 
     // Verify adaptive strictly executed only JS
     expect(jsSpy).toHaveBeenCalledTimes(1);
@@ -98,7 +100,9 @@ describe('Evaluation Engine - Execution Path Verification', () => {
     });
 
     const iterator = runEvaluation(config, policy, 'eval-path-test-2', mockRunner as unknown as (size: number, runtime: string, mode: string) => Promise<unknown>);
-    for await (const _res of iterator) {}
+    for await (const _res of iterator) {
+      void _res;
+    }
 
     // Verify adaptive strictly executed only Wasm
     expect(wasmSpy).toHaveBeenCalledTimes(1);
