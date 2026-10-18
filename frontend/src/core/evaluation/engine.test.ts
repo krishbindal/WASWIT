@@ -94,7 +94,9 @@ describe('Evaluation Engine', () => {
     Object.freeze(policy.workloads.sort!.provenance.gridSizes);
 
     const iterator = runEvaluation(config, policy, 'eval-id-123');
-    for await (const _res of iterator) {}
+    for await (const _res of iterator) {
+      void _res;
+    }
 
     // Verify structural immutability
     expect(JSON.stringify(policy)).toBe(snapshot);
@@ -259,7 +261,9 @@ describe('Evaluation Engine', () => {
     vi.mocked(matrixMocks.multiplyMatricesJS).mockClear();
     
     const iterator = runEvaluation(config, policy, 'eval-timing-boundary');
-    for await (const _res of iterator) {}
+    for await (const _res of iterator) {
+      void _res;
+    }
 
     // Input generation occurs exactly twice per case (once for A, once for B), despite 5 total iterations per mode (15 total executions)
     expect(matrixMocks.generateDeterministicMatrix).toHaveBeenCalledTimes(2);

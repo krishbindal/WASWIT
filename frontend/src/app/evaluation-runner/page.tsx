@@ -1,5 +1,5 @@
 'use client';
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { runBenchmark } from '@/core/benchmark/engine';
 import { multiplyMatricesJS } from '@/core/workloads/matrix';
@@ -22,12 +22,16 @@ export default function EvaluationRunner() {
   const [status, setStatus] = useState('Idle');
 
   useEffect(() => {
+    let active = true;
+
     async function runEval(workload: WorkloadId, size: number, mode: string) {
+        if (!active) return;
         setStatus(`Running Evaluation: ${workload} ${size} ${mode}`);
         try {
             if (mode === 'wasm' || mode === 'adaptive') {
                 await initWasm();
             }
+            if (!active) return;
 
             let jsRun: any;
             let wasmRun: any;
@@ -82,6 +86,8 @@ export default function EvaluationRunner() {
                 throw new Error(res.error?.toString() || "Unknown error");
             }
 
+            if (!active) return;
+
             setResults({ 
                 workload,
                 size,
@@ -96,6 +102,7 @@ export default function EvaluationRunner() {
             });
             setStatus('Evaluation_Complete');
         } catch (err: any) {
+            if (!active) return;
             setResults({
                 workload,
                 size,
@@ -114,19 +121,26 @@ export default function EvaluationRunner() {
         const mode = params.get('mode');
         
         if (workloadParam && sizeParam && mode) {
-            if (workloadParam !== 'matrix' && workloadParam !== 'sort' && workloadParam !== 'sha256') {
-                setStatus('Evaluation_Failed: Unknown workload');
-                return;
-            }
-            const workload = workloadParam as WorkloadId;
-            const size = Number.parseInt(sizeParam, 10);
-            if (!Number.isFinite(size) || !Number.isInteger(size) || size <= 0) {
-                setStatus('Evaluation_Failed: Invalid size');
-                return;
-            }
-            runEval(workload, size, mode);
+            queueMicrotask(() => {
+                if (!active) return;
+                if (workloadParam !== 'matrix' && workloadParam !== 'sort' && workloadParam !== 'sha256') {
+                    setStatus('Evaluation_Failed: Unknown workload');
+                    return;
+                }
+                const workload = workloadParam as WorkloadId;
+                const size = Number.parseInt(sizeParam, 10);
+                if (!Number.isFinite(size) || !Number.isInteger(size) || size <= 0) {
+                    setStatus('Evaluation_Failed: Invalid size');
+                    return;
+                }
+                runEval(workload, size, mode);
+            });
         }
     }
+
+    return () => {
+        active = false;
+    };
   }, []);
 
   return (
