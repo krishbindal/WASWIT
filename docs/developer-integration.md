@@ -33,7 +33,7 @@ flowchart TD
 The primary entry point. It accepts strongly-typed inputs and automatically routes the execution.
 
 ```typescript
-import { waswitRun } from 'waswit-sdk';
+import { waswitRun } from 'waswit';
 
 const result = await waswitRun({
   workload: 'sort',
@@ -52,7 +52,7 @@ const result = await waswitRun({
 WebAssembly modules incur a lazy-loading instantiation penalty. Developers can call `waswitPreload()` early in the application lifecycle (e.g., during a loading screen) to eliminate this penalty from the critical path.
 
 ```typescript
-import { waswitPreload } from 'waswit-sdk';
+import { waswitPreload } from 'waswit';
 
 // Call early in startup
 await waswitPreload();

@@ -33,18 +33,24 @@ The project has successfully concluded its empirical evaluation phase.
 - **NO external datasets** are utilized.
 - **NO backend, serverless infrastructure, or database** is implemented.
 ## Developer Integration
-WASWIT can be used as a deterministic router for supported workloads using the Developer SDK.
 
-`	ypescript
-import { waswitRun } from './core/sdk';
+WASWIT can be used as a deterministic runtime router for supported workloads using the Developer SDK package (`waswit`).
+
+```typescript
+import { waswitRun } from 'waswit';
 
 const result = await waswitRun({
   workload: 'sort',
   input: new Int32Array([5, 3, 4, 1, 2])
 });
-console.log(Executed on: );
-`
-**Research vs Developer Mode:**
-- The SDK utilizes the validated **frozen empirical policy** derived from Phase 5 (phase5FrozenPolicy).
-- It applies thresholds deterministically without dynamically re-calibrating or re-benchmarking in production.
-- For interactive exploration, run the local server and visit the /developer Playground.
+
+console.log(`Executed on: ${result.runtime}`); // "wasm" or "javascript"
+console.log(`Execution time: ${result.executionTimeMs.toFixed(3)} ms`);
+console.log(`Selection overhead: ${result.selectionOverheadMs.toFixed(3)} ms`);
+```
+
+### Research vs Developer Mode
+- **Frozen Policy**: The SDK utilizes the validated **frozen empirical policy** derived from Phase 5 (`phase5FrozenPolicy`, version `1.0.0-final`).
+- **Zero Profiling Overhead**: It evaluates thresholds deterministically without dynamically re-calibrating or re-benchmarking in production.
+- **Interactive Exploration**: Run the local development server and navigate to `/developer` for the interactive Developer Playground.
+- **Capstone/MTE Documentation**: Refer to `docs/mte/` for full defense, viva preparation, and local run guides.

@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WASWIT Frontend & Interactive Evaluation Harness
+
+This directory contains the Next.js / React / TypeScript web interface and research test harness for **WASWIT** (Workload-Aware Intelligent Selection between JavaScript and WebAssembly).
 
 ## Getting Started
 
-First, run the development server:
+### 1. Prerequisites
+- Node.js >= 20 (v24.x verified)
+- Rust & `wasm-pack` (for compiling WebAssembly workloads)
 
+### 2. Build WebAssembly Module
+Ensure the Rust-based WebAssembly artifacts are built before running the application:
+```bash
+npm run build:wasm
+```
+This compiles the Rust crate in `../wasm` and places web-target bindings into `src/wasm/`.
+
+### 3. Run Development Server
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Key Routes
+
+- **`/` (Research Dashboard)**: Real-time system information, workload verification, and cross-runtime parity testing.
+- **`/developer` (Developer Playground)**: Interactive demo for testing deterministic runtime selection using the `waswit` SDK.
+- **`/calibration-runner`**: Calibration acquisition interface (Phase 5C).
+- **`/evaluation-runner`**: Independent evaluation harness (Phase 5E).
+- **`/pilot-test-runner`**: Feasibility pilot testing interface (Phase 5B).
+- **`/selector-test`**: Unit-level selector testing interface (Phase 3).
+
+## Verification & Testing
+
+```bash
+# Run unit tests (142 tests)
+npx vitest run
+
+# Run end-to-end tests (13 test suites via Chromium)
+npx playwright test
+
+# Production build & type-check
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Structure
+- `src/app/`: Next.js App Router pages and layouts.
+- `src/components/`: UI components (dashboard, charts, workload cards).
+- `src/core/`:
+  - `benchmark/`: Micro-benchmarking execution and statistical engines.
+  - `calibration/`: Policy calibration algorithms.
+  - `evaluation/`: Independent evaluation harness and dispatchers.
+  - `sdk/`: Developer-facing SDK implementation (`waswitRun`, `waswitPreload`).
+  - `selection/`: Pure deterministic selector, analyzer, and frozen empirical policy.
+  - `workloads/`: Implementations for Matrix Multiplication, Merge Sort, and SHA-256.
+- `src/wasm/`: Generated WebAssembly bindings from `wasm-pack`.
+- `artifacts/`: Cryptographically locked scientific datasets, policies, and analyses.
