@@ -15,25 +15,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Frozen Phase 5 Research Artifact Hashes
+      - name: Verify Frozen Phase 5 and Phase 6 Research Artifact Hashes
         run: |
           RAW_EVAL_HASH=$(sha256sum frontend/artifacts/evaluation/final_evaluation_2026-09-29T18-16-18-546Z.json | awk '{print $1}')
           FROZEN_POL_HASH=$(sha256sum frontend/artifacts/policy/frozen_policy_2026-09-29T17-33-07-945Z.json | awk '{print $1}')
-          
-          EXPECTED_RAW="e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220"
-          EXPECTED_POL="c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9"
+          RAW_P6_HASH=$(sha256sum research/phase6/raw_phase6_evaluation.json | awk '{print $1}')
+          ANALYSIS_P6_HASH=$(sha256sum research/phase6/phase6_analysis.json | awk '{print $1}')
 
-          if [ "$RAW_EVAL_HASH" != "$EXPECTED_RAW" ]; then
-            echo "ERROR: Raw evaluation dataset hash mismatch! Expected $EXPECTED_RAW, got $RAW_EVAL_HASH"
+          EXPECTED_RAW_EVAL="e26be7d99266c17f8aa4f80ae62a364904720d32393bc276caeedc68e3901220"
+          EXPECTED_FROZEN_POL="c8c330ebb91abf7757d35a7bd0ad9a03214f0866f77d74107a21f0056b661ef9"
+          EXPECTED_RAW_P6="dff0315cf61c5c63ae1dd31f1a8b07c2d40cd682c5cbb4c3547e13d7ed9a2577"
+          EXPECTED_ANALYSIS_P6="58009850f027b934bf3904be114fbab5dc944c2514dd64ed277031559fedd4c0"
+
+          if [ "$RAW_EVAL_HASH" != "$EXPECTED_RAW_EVAL" ]; then
+            echo "ERROR: Phase 5 raw evaluation dataset hash mismatch! Expected $EXPECTED_RAW_EVAL, got $RAW_EVAL_HASH"
             exit 1
           fi
 
-          if [ "$FROZEN_POL_HASH" != "$EXPECTED_POL" ]; then
-            echo "ERROR: Frozen policy hash mismatch! Expected $EXPECTED_POL, got $FROZEN_POL_HASH"
+          if [ "$FROZEN_POL_HASH" != "$EXPECTED_FROZEN_POL" ]; then
+            echo "ERROR: Phase 5 frozen policy hash mismatch! Expected $EXPECTED_FROZEN_POL, got $FROZEN_POL_HASH"
             exit 1
           fi
 
-          echo "Phase 5 cryptographic hashes verified successfully."
+          if [ "$RAW_P6_HASH" != "$EXPECTED_RAW_P6" ]; then
+            echo "ERROR: Phase 6 raw evaluation dataset hash mismatch! Expected $EXPECTED_RAW_P6, got $RAW_P6_HASH"
+            exit 1
+          fi
+
+          if [ "$ANALYSIS_P6_HASH" != "$EXPECTED_ANALYSIS_P6" ]; then
+            echo "ERROR: Phase 6 analysis output hash mismatch! Expected $EXPECTED_ANALYSIS_P6, got $ANALYSIS_P6_HASH"
+            exit 1
+          fi
+
+          echo "All four Phase 5 and Phase 6 cryptographic hashes verified successfully."
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -61,6 +75,12 @@ jobs:
         working-directory: frontend
         run: npm run build:wasm
 
+      - name: Lint and Type Check Frontend
+        working-directory: frontend
+        run: |
+          npm run lint
+          npx tsc --noEmit
+
       - name: Run Frontend Vitest Unit Tests
         working-directory: frontend
         run: npx vitest run
@@ -69,9 +89,70 @@ jobs:
         working-directory: frontend
         run: npm run build
 
+      - name: Run Playwright Browser Integration Tests
+        working-directory: frontend
+        run: npx playwright test e2e/smoke.spec.ts e2e/parity.spec.ts e2e/developer.spec.ts
+
       - name: Install SDK Package Dependencies & Build SDK
         working-directory: packages/waswit
         run: |
           npm ci
           npm run build
           npm pack
+
+      - name: Verify Packed SDK Tarball & Isolated Consumer Execution
+        run: |
+          cd packages/waswit
+          TARBALL=$(ls waswit-*.tgz | head -n 1)
+          if [ -z "$TARBALL" ]; then
+            echo "ERROR: waswit tarball not found!"
+            exit 1
+          fi
+          echo "Verifying tarball: $TARBALL"
+          tar -tzf "$TARBALL"
+
+          mkdir -p /tmp/waswit-consumer-smoke
+          cd /tmp/waswit-consumer-smoke
+          npm init -y
+          npm install "$GITHUB_WORKSPACE/packages/waswit/$TARBALL"
+
+          node -e "
+            const assert = require('assert');
+            const { waswitRun, waswitPreload } = require('waswit');
+            assert.strictEqual(typeof waswitRun, 'function', 'waswitRun must be a function in CJS');
+            assert.strictEqual(typeof waswitPreload, 'function', 'waswitPreload must be a function in CJS');
+
+            (async () => {
+              const res = await waswitRun({
+                workload: 'sha256',
+                input: new Uint8Array([97, 98, 99])
+              });
+              assert.strictEqual(res.runtime, 'javascript', 'Expected javascript runtime for N <= 1000 in CJS');
+              assert.strictEqual(res.workload, 'sha256');
+              assert.strictEqual(res.inputSize, 3);
+              const hex = Array.from(res.result).map(b => b.toString(16).padStart(2, '0')).join('');
+              const expectedHex = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+              assert.strictEqual(hex, expectedHex, 'SHA-256 digest mismatch in CJS');
+              console.log('Isolated consumer CJS check: PASS');
+            })().catch(err => {
+              console.error('Isolated consumer CJS execution failed:', err);
+              process.exit(1);
+            });
+          "
+
+          node --input-type=module -e "
+            import assert from 'node:assert';
+            import { waswitRun, waswitPreload } from 'waswit';
+            assert.strictEqual(typeof waswitRun, 'function', 'waswitRun must be a function in ESM');
+            assert.strictEqual(typeof waswitPreload, 'function', 'waswitPreload must be a function in ESM');
+
+            const res = await waswitRun({
+              workload: 'sha256',
+              input: new Uint8Array([97, 98, 99])
+            });
+            assert.strictEqual(res.runtime, 'javascript');
+            assert.strictEqual(res.workload, 'sha256');
+            const hex = Array.from(res.result).map(b => b.toString(16).padStart(2, '0')).join('');
+            assert.strictEqual(hex, 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+            console.log('Isolated consumer ESM check: PASS');
+          "
