@@ -2,7 +2,7 @@
 
 **Workload-Aware Intelligent Selection between JavaScript and WebAssembly**
 
-WASWIT is a deterministic, browser-oriented JavaScript and WebAssembly runtime-selection toolkit. It dynamically selects the optimal execution engine (JavaScript or WebAssembly) for supported computational workloads based on a frozen, empirically calibrated threshold policy.
+WASWIT is a deterministic, browser-oriented JavaScript and WebAssembly runtime-selection toolkit. It routes supported computational workloads to either JavaScript or WebAssembly by applying a frozen, empirically calibrated threshold policy derived from benchmark profiling.
 
 ## Features
 
@@ -110,7 +110,7 @@ import type {
 
 - **Designed for Browser Bundlers**: WASWIT is designed for modern frontend bundlers (such as Vite, Webpack 5, Next.js, Rollup, and Parcel). The WebAssembly asset is imported using standard ECMAScript asset patterns (`new URL('waswit_wasm_bg.wasm', import.meta.url)`), which browser bundlers automatically resolve into hashed assets and serve via HTTP.
 - **Unbundled Node.js Limitations**: Direct execution in standalone, unbundled Node.js without a bundler is not supported out-of-the-box for WebAssembly routes. Node's native `fetch()` implementation does not support `file://` URLs, and unbundled CommonJS lacks native `import.meta.url`. Pure JavaScript routes (e.g. smaller inputs where JavaScript is faster) will execute cleanly in Node.js, but full dual-runtime execution requires a bundler or browser environment.
-- **Empirical Policy Characteristics**: The runtime selection policy is deterministic and threshold-based, derived from extensive Phase 5 and Phase 6 empirical benchmarking on Blink/V8 (Chromium 138) on dedicated host hardware. The policy is not machine-learning-based and does not adapt online. While it reliably avoids suboptimal runtimes under standard browser workloads, exact performance cross-over boundaries may vary across non-Chromium engines (e.g., Safari JavaScriptCore or Firefox SpiderMonkey) and distinct CPU microarchitectures.
+- **Empirical Policy Characteristics & Research Context**: The runtime selection engine applies a frozen, deterministic threshold policy calibrated on Blink/V8 (Chromium 138) under dedicated host benchmark conditions. It is not machine-learning-based and does not adapt dynamically online. In formal research evaluations, the specified multiplicity-adjusted statistical analyses did not establish statistically significant differences between policy-directed selection and individual static baselines across the evaluated workloads. Because cross-over boundaries depend on engine-specific JIT optimizations, garbage collection characteristics, and underlying hardware memory bandwidth, actual performance may vary across workloads, browser engines (e.g., Chromium, Safari JavaScriptCore, or Firefox SpiderMonkey), and distinct host hardware configurations.
 
 ## License
 

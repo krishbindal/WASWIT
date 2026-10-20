@@ -121,7 +121,23 @@ jobs:
             const { waswitRun, waswitPreload } = require('waswit');
             assert.strictEqual(typeof waswitRun, 'function', 'waswitRun must be a function in CJS');
             assert.strictEqual(typeof waswitPreload, 'function', 'waswitPreload must be a function in CJS');
-            console.log('Isolated consumer CJS check: PASS');
+
+            (async () => {
+              const res = await waswitRun({
+                workload: 'sha256',
+                input: new Uint8Array([97, 98, 99])
+              });
+              assert.strictEqual(res.runtime, 'javascript', 'Expected javascript runtime for N <= 1000 in CJS');
+              assert.strictEqual(res.workload, 'sha256');
+              assert.strictEqual(res.inputSize, 3);
+              const hex = Array.from(res.result).map(b => b.toString(16).padStart(2, '0')).join('');
+              const expectedHex = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
+              assert.strictEqual(hex, expectedHex, 'SHA-256 digest mismatch in CJS');
+              console.log('Isolated consumer CJS check: PASS');
+            })().catch(err => {
+              console.error('Isolated consumer CJS execution failed:', err);
+              process.exit(1);
+            });
           "
 
           node --input-type=module -e "
